@@ -2,20 +2,20 @@
 
 **[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)**
 
-A one-button game built on the physics of [Lunar oxygen to L1](../oxygen-to-l1/). A needle sweeps between 2,300 and 2,360 m/s. Press **LAUNCH** or the space bar to fire a capsule of liquid oxygen from the rail. Then watch whether it reaches the depot at L1.
+A one-button game built on the physics of [Lunar oxygen to L1](../oxygen-to-l1-direct/). A needle sweeps between 2,300 and 2,360 m/s. Press **LAUNCH** or the space bar to fire a capsule of liquid oxygen from the rail. Then watch whether it reaches the depot at L1.
 
 ## Two rails
 
-A selector chooses the launch site:
+A selector chooses the launch site. The game opens on the hillside rail, the [direct route](../oxygen-to-l1-direct/) and the main version, and remembers your choice after that.
 
-| | Flat rail | Hillside rail |
+| | Hillside rail | [Flat rail](../oxygen-to-l1/) |
 |---|---|---|
-| Site | 2.75°N 14.25°W, near the centre of the near side | 0.0°, 84.92°W, on the western limb |
-| Rail | flat, firing east | inclined 30° up a 1,381 m slope |
-| Route | one loop around the Moon, 308 h | direct, 59 h |
-| Delivery window | 2,323.6–2,332.9 m/s | 2,323.4–2,332.6 m/s |
-| Oxygen delivered | 356 kg | 372 kg |
-| Capsule Δv budget | 228.8 m/s | 215.6 m/s |
+| Site | 0.0°, 84.92°W, on the western limb | 2.75°N 14.25°W, near the centre of the near side |
+| Rail | inclined 30° up a 1,381 m slope | flat, firing east |
+| Route | direct, 59 h | one loop around the Moon, 308 h |
+| Delivery window | 2,323.4–2,332.6 m/s | 2,323.6–2,332.9 m/s |
+| Oxygen delivered | 372 kg | 356 kg |
+| Capsule Δv budget | 215.6 m/s | 228.8 m/s |
 
 ## How a shot is judged
 

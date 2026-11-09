@@ -232,14 +232,14 @@ h1 {
 
 <figure class="scope" id="scope" aria-label="Spyglass on the rail, drawn to scale">
   <canvas id="scope-cv"></canvas>
-  <figcaption><b id="scope-title">Flat rail · to scale</b><span id="scope-sub"></span><span class="live" id="scope-live"></span></figcaption>
+  <figcaption><b id="scope-title">Slope rail · to scale</b><span id="scope-sub"></span><span class="live" id="scope-live"></span></figcaption>
 </figure>
 
 <footer class="controls" id="controls">
   <div class="gauge">
     <div class="modes" role="radiogroup" aria-label="Launch site">
-      <label><input type="radio" name="mode" id="mode-flat" value="flat" checked><span><b>Flat rail</b> 14.25°W · loops the Moon · 308 h</span></label>
-      <label><input type="radio" name="mode" id="mode-slope" value="slope"><span><b>Slope rail</b> 84.92°W · 30° · direct · 59 h</span></label>
+      <label><input type="radio" name="mode" id="mode-slope" value="slope" checked><span><b>Slope rail</b> 84.92°W · 30° · direct · 59 h</span></label>
+      <label><input type="radio" name="mode" id="mode-flat" value="flat"><span><b>Flat rail</b> 14.25°W · loops the Moon · 308 h</span></label>
     </div>
     <div class="gauge-head"><span>Muzzle speed</span><div id="readout">2,330.0 <small>m/s</small></div></div>
     <div class="track" id="track">
@@ -462,7 +462,7 @@ for (const m of Object.values(MODES)) {         // each rail's reference route, 
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
 const game = { kg: 0, shots: 0, docked: 0, streak: 0, best: store.get("l1run.best", 0) };
-let MODE = MODES[store.get("l1run.mode", "flat")] || MODES.flat;
+let MODE = MODES[store.get("l1run.mode", "slope")] || MODES.slope;   // the direct route is the main version
 let flight = null, needleT = 0, lastFrame = performance.now(), briefTimer = 0;
 
 // --- gauge -----------------------------------------------------------------------------------
