@@ -1,0 +1,62 @@
+﻿lat -5.0: 9 candidatos acumulados
+lat -4.5: 22 candidatos acumulados
+lat -4.0: 36 candidatos acumulados
+lat -3.5: 45 candidatos acumulados
+lat -3.0: 56 candidatos acumulados
+lat -2.5: 64 candidatos acumulados
+lat -2.0: 73 candidatos acumulados
+lat -1.5: 85 candidatos acumulados
+lat -1.0: 99 candidatos acumulados
+lat -0.5: 114 candidatos acumulados
+lat +0.0: 122 candidatos acumulados
+lat +0.5: 135 candidatos acumulados
+lat +1.0: 143 candidatos acumulados
+lat +1.5: 145 candidatos acumulados
+lat +2.0: 159 candidatos acumulados
+lat +2.5: 162 candidatos acumulados
+lat +3.0: 178 candidatos acumulados
+lat +3.5: 186 candidatos acumulados
+lat +4.0: 201 candidatos acumulados
+lat +4.5: 214 candidatos acumulados
+lat +5.0: 228 candidatos acumulados
+228 encajes válidos en 73 zonas; trayectorias de las 40 con menos obra
+  -2.0°  -93.31°  raíl a 20° (sube 945 m)  obra 0.40 Mm³, desmonte 28 m, relleno 40 m  -> v0 2568.3 m/s, frena 1096 m/s en L1, 13 h
+  +2.5°  -96.99°  raíl a 20° (sube 945 m)  obra 0.44 Mm³, desmonte 35 m, relleno 24 m  -> v0 2495.0 m/s, frena 911 m/s en L1, 16 h
+  -5.0°  -92.26°  raíl a 30° (sube 1381 m)  obra 0.46 Mm³, desmonte 33 m, relleno 20 m  -> sin solución
+  -3.5°  -72.00°  raíl a 20° (sube 945 m)  obra 0.53 Mm³, desmonte 32 m, relleno 49 m  -> sin solución
+  -1.0°  -97.28°  raíl a 25° (sube 1167 m)  obra 0.54 Mm³, desmonte 30 m, relleno 47 m  -> v0 2328.1 m/s, frena 158 m/s en L1, 54 h
+  +1.0°  -74.81°  raíl a 30° (sube 1381 m)  obra 0.59 Mm³, desmonte 33 m, relleno 45 m  -> sin solución
+  -4.5°  -72.67°  raíl a 20° (sube 945 m)  obra 0.63 Mm³, desmonte 49 m, relleno 33 m  -> sin solución
+  -3.0°  -71.88°  raíl a 20° (sube 945 m)  obra 0.69 Mm³, desmonte 68 m, relleno 71 m  -> sin solución
+  -1.0°  -85.81°  raíl a 20° (sube 945 m)  obra 0.73 Mm³, desmonte 26 m, relleno 80 m  -> sin solución
+  -3.0° -101.65°  raíl a 20° (sube 945 m)  obra 0.74 Mm³, desmonte 38 m, relleno 44 m  -> v0 2326.6 m/s, frena 133 m/s en L1, 67 h
+  -2.0°  -94.88°  raíl a 25° (sube 1167 m)  obra 0.75 Mm³, desmonte 25 m, relleno 39 m  -> v0 2327.1 m/s, frena 141 m/s en L1, 60 h
+  +5.0°  -71.36°  raíl a 20° (sube 945 m)  obra 0.80 Mm³, desmonte 44 m, relleno 50 m  -> sin solución
+  +5.0°  -66.14°  raíl a 20° (sube 945 m)  obra 0.80 Mm³, desmonte 48 m, relleno 50 m  -> sin solución
+  +4.5°  -83.59°  raíl a 25° (sube 1167 m)  obra 0.81 Mm³, desmonte 141 m, relleno 105 m  -> sin solución
+  -4.0° -103.24°  raíl a 20° (sube 945 m)  obra 0.83 Mm³, desmonte 50 m, relleno 76 m  -> v0 2326.7 m/s, frena 134 m/s en L1, 64 h
+  -3.5° -103.12°  raíl a 20° (sube 945 m)  obra 0.84 Mm³, desmonte 53 m, relleno 27 m  -> v0 2326.7 m/s, frena 134 m/s en L1, 65 h
+  -4.5°  -86.82°  raíl a 25° (sube 1167 m)  obra 0.86 Mm³, desmonte 66 m, relleno 140 m  -> v0 2537.3 m/s, frena 1021 m/s en L1, 14 h
+  -1.5°  -85.59°  raíl a 20° (sube 945 m)  obra 0.87 Mm³, desmonte 41 m, relleno 80 m  -> sin solución
+  +4.0°  -86.55°  raíl a 20° (sube 945 m)  obra 0.90 Mm³, desmonte 64 m, relleno 45 m  -> sin solución
+  +3.5° -101.56°  raíl a 20° (sube 945 m)  obra 0.91 Mm³, desmonte 64 m, relleno 57 m  -> v0 2326.6 m/s, frena 133 m/s en L1, 67 h
+  -1.5°  -69.11°  raíl a 20° (sube 945 m)  obra 0.91 Mm³, desmonte 107 m, relleno 107 m  -> sin solución
+  -0.5°  -97.10°  raíl a 25° (sube 1167 m)  obra 0.93 Mm³, desmonte 34 m, relleno 53 m  -> v0 2328.0 m/s, frena 156 m/s en L1, 55 h
+  +4.5° -100.91°  raíl a 20° (sube 945 m)  obra 0.94 Mm³, desmonte 66 m, relleno 92 m  -> v0 2326.7 m/s, frena 134 m/s en L1, 68 h
+  +4.0°  -90.74°  raíl a 35° (sube 1584 m)  obra 0.94 Mm³, desmonte 100 m, relleno 34 m  -> sin solución
+  +0.5°  -72.97°  raíl a 25° (sube 1167 m)  obra 1.00 Mm³, desmonte 114 m, relleno 72 m  -> sin solución
+  -0.5°  -98.62°  raíl a 20° (sube 945 m)  obra 1.03 Mm³, desmonte 74 m, relleno 120 m  -> v0 2468.4 m/s, frena 835 m/s en L1, 17 h
+  +1.5°  -91.87°  raíl a 20° (sube 945 m)  obra 1.03 Mm³, desmonte 122 m, relleno 74 m  -> sin solución
+  +3.0°  -72.06°  raíl a 20° (sube 945 m)  obra 1.05 Mm³, desmonte 110 m, relleno 60 m  -> sin solución
+  +2.0°  -87.75°  raíl a 20° (sube 945 m)  obra 1.05 Mm³, desmonte 95 m, relleno 40 m  -> sin solución
+  -1.0°  -69.01°  raíl a 20° (sube 945 m)  obra 1.05 Mm³, desmonte 121 m, relleno 98 m  -> sin solución
+  +0.5°  -97.00°  raíl a 20° (sube 945 m)  obra 1.05 Mm³, desmonte 98 m, relleno 82 m  -> v0 2495.0 m/s, frena 911 m/s en L1, 16 h
+  +0.0°  -84.92°  raíl a 30° (sube 1381 m)  obra 1.07 Mm³, desmonte 57 m, relleno 87 m  -> v0 2327.3 m/s, frena 146 m/s en L1, 59 h
+  +3.0°  -68.07°  raíl a 20° (sube 945 m)  obra 1.08 Mm³, desmonte 75 m, relleno 47 m  -> sin solución
+  -2.5°  -88.21°  raíl a 20° (sube 945 m)  obra 1.09 Mm³, desmonte 120 m, relleno 80 m  -> sin solución
+  +2.0°  -84.70°  raíl a 20° (sube 945 m)  obra 1.10 Mm³, desmonte 45 m, relleno 52 m  -> sin solución
+  -2.5°  -96.20°  raíl a 20° (sube 945 m)  obra 1.11 Mm³, desmonte 109 m, relleno 89 m  -> v0 2509.0 m/s, frena 949 m/s en L1, 15 h
+  +4.5°  -66.41°  raíl a 20° (sube 945 m)  obra 1.12 Mm³, desmonte 64 m, relleno 49 m  -> sin solución
+  -2.0°  -95.99°  raíl a 20° (sube 945 m)  obra 1.12 Mm³, desmonte 99 m, relleno 138 m  -> v0 2513.1 m/s, frena 959 m/s en L1, 15 h
+  -0.5°  -87.02°  raíl a 20° (sube 945 m)  obra 1.14 Mm³, desmonte 106 m, relleno 118 m  -> sin solución
+  -3.0°  -79.53°  raíl a 20° (sube 945 m)  obra 1.15 Mm³, desmonte 95 m, relleno 79 m  -> sin solución

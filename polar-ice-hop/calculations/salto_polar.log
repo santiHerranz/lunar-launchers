@@ -1,0 +1,33 @@
+salida -89.5°, 0.0° a 1000 m; blanco 0.0°, -84.92° a -1500 m; 2728 km de arco
+el blanco se mueve 4.6 m/s hacia el este con la rotación de la Luna
+
+ elev    v0 [m/s]  acimut   vuelo   h máx   impacto  ángulo   km/(m/s)  km/° az  km/° elev
+ 15.0°    1543.0  -84.59°   35.6 min    216 km  1545.7   15.1°    10.63     30.3     39.4
+ 20.0°    1529.3  -84.56°   39.3 min    307 km  1532.0   20.0°     8.50     30.3      8.9
+ 22.5°    1527.6  -84.54°   41.3 min    357 km  1530.3   22.5°     7.75     30.3      2.1
+ 25.0°    1529.3  -84.52°   43.6 min    416 km  1532.0   25.0°     7.13     30.3     11.3
+ 30.0°    1543.1  -84.47°   48.9 min    544 km  1545.8   30.0°     6.14     30.3     26.5
+ 35.0°    1571.4  -84.41°   55.7 min    702 km  1574.0   35.0°     5.36     30.3     39.0
+ 40.0°    1615.6  -84.33°   65.0 min    916 km  1618.2   40.0°     4.71     30.3     50.1
+ 45.0°    1678.4  -84.20°   78.4 min   1224 km  1680.9   45.0°     4.14     30.3     60.6
+
+PUNTO DE DISEÑO: raíl a 30°, 100 g, bloque de 940 kg
+  salida 1543.1 m/s (mínima con la Luna quieta 1528.8), acimut -84.47°; vuelo 48.9 min, apoapsis 544 km
+  impacto a 1546 m/s con 30.0° sobre el suelo; 1 m/s en la boca = 6.1 km, 0,1° de acimut = 3.0 km
+  raíl: 1214 m acelerando (1.57 s), 405 m de freno de la cuna; empuje 1198 kN, pico 2312 MW, 449 kWh netos por disparo
+  bloque: cilindro de 1.00 m de diámetro y 1.30 m (1.02 m³); 1.17 MPa sobre la base, margen 7x; podría medir hasta 8.9 m
+  impacto: 1.19 MJ/kg frente a 0.31 para calentar, 0.33 para fundir y 2.26 para evaporar
+    si el hielo se queda el 30% de la energía: funde el 14%, se evapora el 0% en el choque y el 2% al recongelarse en el vacío: queda como mucho el 98%
+    si el hielo se queda el 50% de la energía: funde el 86%, se evapora el 0% en el choque y el 13% al recongelarse en el vacío: queda como mucho el 87%
+    si el hielo se queda el 70% de la energía: funde el 100%, se evapora el 8% en el choque y el 14% al recongelarse en el vacío: queda como mucho el 78%
+  cráter en regolito suelto: unos 19 m de diámetro y 2.3 m de hondo (orden de magnitud)
+  al sol del ecuador el hielo expuesto pierde 1.7 kg/m²·h (2 mm/h); de noche (suelo a 100 K) la pérdida es despreciable
+
+CADENCIA para distintas necesidades de agua (bloque de diseño):
+   agua/año   bloques/año   uno cada     energía/año
+        54 t          57       152.6 h        25.8 MWh
+       500 t         532        16.5 h       238.9 MWh
+      5000 t        5319         1.6 h      2389.5 MWh
+
+NOTAS: Luna esférica y de dos cuerpos; la Tierra cambia el impacto menos de 1 km en 40 min. Las cotas de salida y llegada son supuestas:
+  SLDEM2015 llega solo a 60° de latitud, el polo pide el LDEM polar de LOLA. La fracción recuperada del impacto es la gran incógnita.

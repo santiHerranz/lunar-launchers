@@ -1,0 +1,12 @@
+﻿LEO 400 km -> L1: 3714 m/s;  nave llena con 100 t de carga: 6949 m/s en total
+   C3  desde L1  desde LEO  le quedan desde L1  le quedan desde LEO
+  8.9    1156 m/s     3581 m/s             5793 m/s              3368 m/s
+ 12.0    1291 m/s     3718 m/s             5658 m/s              3232 m/s
+ 16.0    1463 m/s     3892 m/s             5486 m/s              3057 m/s
+ 20.0    1633 m/s     4064 m/s             5316 m/s              2886 m/s
+ 28.2    1973 m/s     4408 m/s             4976 m/s              2541 m/s
+
+Propelente subido de la Tierra por misión (nave llena al salir hacia Marte):
+  A, llenando en LEO:  1200 t
+  B, llenando en L1:   1296 t  = 376 t para subir la nave a L1 + 264 t de metano + 656 t que gasta el petrolero que lo sube
+  y además 936 t de oxígeno lunar

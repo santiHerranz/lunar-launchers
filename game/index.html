@@ -1,0 +1,1070 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>L1 Oxygen Run</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed space scene on canvas, HUD in the top corners, one control strip (speed gauge + LAUNCH) at the bottom. Single dark look by choice. */
+:root {
+  --space: #0a0d14;
+  --panel: #121722;
+  --line: #2a3242;
+  --ink: #e9e5db;
+  --dim: #8a93a6;
+  --orange: #f28c28;
+  --lox: #74c6ff;
+  --good: #5cc48e;
+  --bad: #e2574c;
+  --moon: #9a9ca3;
+  --maria: #73767e;
+  --f-display: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --f-body: Barlow, "Segoe UI", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--space); color: var(--ink);
+  font: 15px/1.4 var(--f-body); overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+.hud {
+  position: fixed; left: 0; right: 0; top: 0; pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.brand { min-width: 0; max-width: 30rem; }
+h1 {
+  margin: 0; font: 700 clamp(26px, 4.4vw, 40px)/0.95 var(--f-display);
+  letter-spacing: 0.02em; text-transform: uppercase; color: var(--orange);
+}
+.brand p { margin: 6px 0 0; color: var(--dim); font-size: 13.5px; text-wrap: pretty; }
+.stats {
+  display: grid; grid-template-columns: auto auto; gap: 2px 14px; text-align: right;
+  font: 500 13px/1.25 var(--f-data); font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.stats dt { color: var(--dim); font: 600 12px/1.25 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase; align-self: center; }
+.stats dd { margin: 0; }
+.stats .big { color: var(--lox); font-size: 17px; }
+.stats dd { transform-origin: right center; }
+.stats dd.pop { animation: pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes pop { 0% { transform: scale(1.45); color: var(--ink); } 100% { transform: scale(1); } }
+.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+#sound {
+  pointer-events: auto; cursor: pointer; padding: 3px 9px; background: transparent; color: var(--dim);
+  border: 1px solid var(--line); font: 600 11px/1.3 var(--f-display); letter-spacing: 0.1em; text-transform: uppercase;
+}
+#sound[aria-pressed="true"] { color: var(--ink); border-color: var(--dim); }
+#sound:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.clock {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  top: calc(var(--hud-h, 96px) + env(safe-area-inset-top, 0px));
+  font: 600 22px/1 var(--f-data); font-variant-numeric: tabular-nums; color: var(--ink);
+  pointer-events: none; text-align: center; white-space: nowrap;
+}
+.clock small { display: block; margin-top: 4px; font: 500 12px/1.2 var(--f-data); color: var(--dim); }
+
+.result {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  top: calc(var(--hud-h, 96px) + env(safe-area-inset-top, 0px));
+  width: min(30rem, calc(100% - 32px)); box-sizing: border-box;
+  background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--line);
+  border-left: 4px solid var(--good); padding: 12px 16px; pointer-events: none;
+}
+.result.fail { border-left-color: var(--bad); }
+.result:not([hidden]) { animation: card-in 0.45s cubic-bezier(0.2, 1.3, 0.4, 1); }
+@keyframes card-in { from { opacity: 0; transform: translateX(-50%) translateY(-14px) scale(0.96); } to { opacity: 1; transform: translateX(-50%); } }
+.result h2 { margin: 0; font: 700 24px/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.03em; }
+.result.ok h2 { color: var(--good); }
+.result.fail h2 { color: var(--bad); }
+.result p { margin: 6px 0 0; font-size: 14px; color: var(--ink); text-wrap: pretty; }
+.result .facts { color: var(--dim); font: 400 12.5px/1.4 var(--f-data); }
+
+.scope {
+  display: none; position: fixed; z-index: 2; margin: 0; width: 224px; pointer-events: none;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+.scope canvas { display: block; width: 224px; height: 224px; }
+.scope figcaption { margin-top: 6px; text-align: center; font: 400 11.5px/1.4 var(--f-data); color: var(--dim); }
+.scope figcaption b { display: block; font: 700 13px/1.2 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
+.scope figcaption span { display: block; }
+.scope .live { color: var(--ink); min-height: 1.4em; font-variant-numeric: tabular-nums; }
+
+.controls {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); padding-top: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: linear-gradient(to top, var(--space) 70%, transparent);
+  display: flex; justify-content: center; align-items: flex-end; gap: 18px; flex-wrap: wrap;
+}
+.gauge { flex: 1 1 22rem; max-width: 40rem; min-width: 0; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 10px; border: 1px solid var(--line); background: var(--panel); }
+.modes label { display: block; min-width: 0; cursor: pointer; }
+.modes input { position: absolute; opacity: 0; pointer-events: none; }
+.modes span {
+  display: block; height: 100%; box-sizing: border-box; padding: 7px 10px;
+  font: 400 12px/1.3 var(--f-data); color: var(--dim); border-bottom: 3px solid transparent;
+}
+.modes b { display: block; font: 700 15px/1.1 var(--f-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+.modes label + label span { border-left: 1px solid var(--line); }
+.modes input:checked + span { background: color-mix(in srgb, var(--orange) 14%, transparent); border-bottom-color: var(--orange); color: var(--ink); }
+.modes input:checked + span b { color: var(--orange); }
+.modes input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: -2px; }
+.modes input:disabled + span { cursor: default; opacity: 0.55; }
+.gauge-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.gauge-head span { font: 600 12px/1 var(--f-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+#readout { font: 600 22px/1 var(--f-data); font-variant-numeric: tabular-nums; color: var(--ink); }
+#readout small { font-size: 13px; color: var(--dim); }
+.track { position: relative; height: 34px; margin-top: 8px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+.zone { position: absolute; top: 0; bottom: 0; }
+.zone.low { background: color-mix(in srgb, var(--bad) 22%, transparent); }
+.zone.ok { background: color-mix(in srgb, var(--good) 55%, transparent); border-left: 1px solid var(--good); border-right: 1px solid var(--good); }
+.zone.ref { width: 2px; background: var(--ink); opacity: 0.8; }
+#needle { position: absolute; top: -2px; bottom: -2px; width: 3px; margin-left: -1.5px; background: var(--orange); left: 0; will-change: transform; }
+#needle.in { background: var(--ink); box-shadow: 0 0 10px 2px var(--good); }
+#readout.in { color: var(--good); }
+#launch.kick { animation: kick 0.35s cubic-bezier(0.2, 1.6, 0.4, 1); }
+@keyframes kick { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
+.ticks { position: relative; height: 16px; font: 400 11px/16px var(--f-data); color: var(--dim); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.legend { margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--dim); }
+.legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; }
+.legend .l-low { background: color-mix(in srgb, var(--bad) 45%, transparent); }
+.legend .l-ok { background: var(--good); }
+
+#launch {
+  flex: 0 0 auto; min-width: 9.5rem; height: 64px; padding: 0 22px; border: 0; cursor: pointer;
+  background: var(--orange); color: #1a0f04;
+  font: 700 28px/1 var(--f-display); letter-spacing: 0.06em; text-transform: uppercase;
+}
+#launch:hover:not(:disabled) { filter: brightness(1.08); }
+#launch:active:not(:disabled) { transform: translateY(1px); }
+#launch:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+#launch:disabled { background: var(--line); color: var(--dim); cursor: default; }
+
+@media (max-width: 640px) {
+  .brand p, .ticks .minor { display: none; }
+  #sound { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(48px + env(safe-area-inset-top, 0px)); }
+  .stats { font-size: 12px; gap: 1px 10px; }
+  .stats .big { font-size: 15px; }
+  .controls { gap: 10px; }
+  .gauge { flex-basis: 100%; }
+  #launch { width: 100%; height: 56px; }
+  .result h2 { font-size: 21px; }
+  .result.brief p { display: none; }
+}
+@media (min-width: 1000px) and (min-height: 620px) {   /* the spyglass, on screens that aren't phones */
+  .scope { display: block; }
+  .controls { padding-right: calc(max(16px, env(safe-area-inset-right, 0px)) + 244px); }
+}
+@media (max-height: 520px) {
+  .brand p, .legend { display: none; }
+  .controls { flex-wrap: nowrap; padding-top: 6px; }
+  .modes { margin-bottom: 4px; }
+  .modes span { padding: 4px 8px; font-size: 11px; }
+  .gauge { flex-basis: auto; }
+  #launch { width: auto; height: 52px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #launch:active:not(:disabled) { transform: none; }
+  #launch.kick, .stats dd.pop, .result:not([hidden]) { animation: none; }
+}
+</style>
+
+<canvas id="scene" aria-label="Map of the flight from the Moon to the L1 depot, in the frame that turns with the Moon"></canvas>
+
+<header class="hud" id="hud">
+  <div class="brand">
+    <h1>L1 Oxygen Run</h1>
+    <p>A rail on the Moon fires 500 kg capsules of liquid oxygen to a depot at Earth–Moon L1. Tap LAUNCH when the needle is in the green. Gravity does the rest.</p>
+  </div>
+  <div class="hud-right">
+    <dl class="stats" aria-live="polite">
+      <dt>LOX in depot</dt><dd class="big" id="s-kg">0 kg</dd>
+      <dt>Docked</dt><dd id="s-docked">0 / 0</dd>
+      <dt>Streak</dt><dd id="s-streak">0 (best 0)</dd>
+    </dl>
+    <button id="sound" type="button" aria-pressed="true" title="Sound (M)">Sound on</button>
+  </div>
+</header>
+
+<div class="clock" id="clock" hidden>T+ 0 h<small id="clock-sub"></small></div>
+
+<section class="result" id="result" hidden aria-live="polite">
+  <h2 id="r-title"></h2>
+  <p id="r-text"></p>
+  <p class="facts" id="r-facts"></p>
+</section>
+
+<figure class="scope" id="scope" aria-label="Spyglass on the rail, drawn to scale">
+  <canvas id="scope-cv"></canvas>
+  <figcaption><b id="scope-title">Flat rail · to scale</b><span id="scope-sub"></span><span class="live" id="scope-live"></span></figcaption>
+</figure>
+
+<footer class="controls" id="controls">
+  <div class="gauge">
+    <div class="modes" role="radiogroup" aria-label="Launch site">
+      <label><input type="radio" name="mode" id="mode-flat" value="flat" checked><span><b>Flat rail</b> 14.25°W · loops the Moon · 308 h</span></label>
+      <label><input type="radio" name="mode" id="mode-slope" value="slope"><span><b>Slope rail</b> 84.92°W · 30° · direct · 59 h</span></label>
+    </div>
+    <div class="gauge-head"><span>Muzzle speed</span><div id="readout">2,330.0 <small>m/s</small></div></div>
+    <div class="track" id="track">
+      <div class="zone low" id="z-low"></div>
+      <div id="z-ok-wrap"></div>
+      <div class="zone ref" id="z-ref" title="Reference shot"></div>
+      <div id="needle"></div>
+    </div>
+    <div class="ticks" id="ticks"></div>
+    <div class="legend">
+      <span><i class="l-low"></i>Falls back: below <b id="vmin-txt">2,322.8</b> m/s</span>
+      <span><i class="l-ok"></i><span id="band-txt">Working out the window…</span></span>
+    </div>
+  </div>
+  <button id="launch" type="button">Launch</button>
+</footer>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------------------------------------
+// Physics: a straight port of codigo/calculos/l1_transferencia.py (planar CR3BP, frame turning
+// with the Moon, Earth at (-mu,0), Moon at (1-mu,0)) and of the capsule budget in capsula_l1.py.
+// ---------------------------------------------------------------------------------------------
+const MU_E = 3.986004418e14, MU_M = 4.9028e12, R_M = 1737.4e3;   // constantes.py
+const MU = MU_M / (MU_E + MU_M);
+const LU = 384400e3;
+const NU = Math.sqrt((MU_E + MU_M) / LU ** 3);
+const TU = 1 / NU, VU = LU * NU, RM = R_M / LU, XM = 1 - MU;
+const HOUR = 3600 / TU;                       // one hour in time units
+const KM = LU / 1e3;                          // km per length unit
+const RTOL = 1e-11, ATOL = 1e-13;
+
+function omega(x, y) {
+  const r1 = Math.hypot(x + MU, y), r2 = Math.hypot(x - XM, y);
+  return 0.5 * (x * x + y * y) + (1 - MU) / r1 + MU / r2;
+}
+const XL1 = (() => {                           // brentq(g, 0.5, XM - 1e-3) in the script
+  const g = x => x - (1 - MU) / (x + MU) ** 2 + MU / (x - XM) ** 2;
+  let a = 0.5, b = XM - 1e-3;
+  for (let i = 0; i < 200; i++) { const m = (a + b) / 2; if (g(a) * g(m) <= 0) b = m; else a = m; }
+  return (a + b) / 2;
+})();
+const CL1 = 2 * omega(XL1, 0);
+
+// The two rails, both on the equator and aimed due east (az 90).
+//  flat:  the L1 reference, 14.25 W, flat; goes once round the Moon (l1_sensibilidad.log).
+//  slope: the direct route, 84.92 W, 30 deg up a 1,381 m slope (l1_sensibilidad_directa_cercana.json).
+// Capsule figures from capsula_l1.py, 500 kg, built for each route's braking and flight time:
+// dvTotal is (v_arr + 30 + 20) x 1.10; LOX loaded and boil-off per hour give the kg delivered.
+const MODES = {
+  flat: { key: "flat", lon: -14.25, elev: 0, vRef: 2328.178, kmPerMs: 5730, fixPerMs: 5730 / 522.2,
+    dvTotal: 228.8, loxLoaded: 373.75, boilPerH: 0.058243, railLabel: "RAIL 14.25°W" },
+  slope: { key: "slope", lon: -84.92, elev: 30, vRef: 2327.344, kmPerMs: 1925, fixPerMs: 1925 / 169.2,
+    dvTotal: 215.6, loxLoaded: 375.47, boilPerH: 0.05999, railLabel: "RAIL 84.92°W · 30°" },
+};
+for (const m of Object.values(MODES)) {         // sitio() and estado0() in the script, planar
+  const lo = m.lon * Math.PI / 180, e = m.elev * Math.PI / 180;
+  m.up = [-Math.cos(lo), -Math.sin(lo)];
+  m.east = [-m.up[1], m.up[0]];
+  m.dir = [Math.cos(e) * m.east[0] + Math.sin(e) * m.up[0], Math.cos(e) * m.east[1] + Math.sin(e) * m.up[1]];
+  m.site = [XM + RM * m.up[0], RM * m.up[1]];
+  m.v0Min = Math.sqrt(2 * omega(m.site[0], m.site[1]) - CL1) * VU;
+}
+const state0 = (m, v0) => [m.site[0], m.site[1], v0 / VU * m.dir[0], v0 / VU * m.dir[1]];
+
+function deriv(s, o) {
+  const x = s[0], y = s[1], vx = s[2], vy = s[3];
+  const dx1 = x + MU, dx2 = x - XM;
+  const q1 = dx1 * dx1 + y * y, q2 = dx2 * dx2 + y * y;
+  const r1 = q1 * Math.sqrt(q1), r2 = q2 * Math.sqrt(q2);
+  o[0] = vx; o[1] = vy;
+  o[2] = x + 2 * vy - (1 - MU) * dx1 / r1 - MU * dx2 / r2;
+  o[3] = y - 2 * vx - (1 - MU) * y / r1 - MU * y / r2;
+}
+
+// Dormand–Prince 5(4), adaptive, FSAL.
+const A = [[], [1/5], [3/40, 9/40], [44/45, -56/15, 32/9], [19372/6561, -25360/2187, 64448/6561, -212/729],
+  [9017/3168, -355/33, 46732/5247, 49/176, -5103/18656], [35/384, 0, 500/1113, 125/192, -2187/6784, 11/84]];
+const E = [71/57600, 0, -71/16695, 71/1920, -17253/339200, 22/525, -1/40];
+const K = Array.from({ length: 7 }, () => new Float64Array(4));
+const TMP = new Float64Array(4);
+function dpStep(s, h, k1, out) {               // returns the error norm; out = 5th-order state; K[6] = f(out)
+  K[0].set(k1);
+  for (let st = 1; st < 7; st++) {
+    const a = A[st];
+    for (let i = 0; i < 4; i++) { let acc = s[i]; for (let j = 0; j < st; j++) acc += h * a[j] * K[j][i]; TMP[i] = acc; }
+    if (st === 6) out.set(TMP);
+    deriv(TMP, K[st]);
+  }
+  let err = 0;
+  for (let i = 0; i < 4; i++) {
+    let e = 0; for (let j = 0; j < 7; j++) e += E[j] * K[j][i];
+    const sc = ATOL + RTOL * Math.max(Math.abs(s[i]), Math.abs(out[i]));
+    err += (h * e / sc) ** 2;
+  }
+  return Math.sqrt(err / 4);
+}
+const rMoon = s => Math.hypot(s[0] - XM, s[1]);
+
+// Fly from (t0, s0) until tEnd or an event, as volar() does: crossing the L1 plane towards Earth,
+// hitting the Moon, or getting more than 0.6 LU from it.
+function fly(s0, t0, tEnd, record) {
+  let s = Float64Array.from(s0), t = t0, h = 1e-5;
+  const k1 = new Float64Array(4), nxt = new Float64Array(4);
+  deriv(s, k1);
+  const ts = record ? [t] : null, ss = record ? [Array.from(s)] : null;
+  const push = (tt, st) => { if (record) { ts.push(tt); ss.push(Array.from(st)); } };
+  const refine = (g, hAcc) => {                 // bisect the step length so that g(state) = 0
+    let lo = 0, hi = hAcc; const tmp = new Float64Array(4);
+    for (let i = 0; i < 60; i++) { const m = (lo + hi) / 2; dpStep(s, m, k1, tmp); if (g(tmp) > 0) lo = m; else hi = m; }
+    dpStep(s, hi, k1, tmp); return [hi, tmp];
+  };
+  for (let n = 0; n < 400000; n++) {
+    let clip = false;
+    if (t + h >= tEnd) { h = tEnd - t; clip = true; }
+    const err = dpStep(s, h, k1, nxt);
+    if (err > 1 && h > 1e-14) { h *= Math.max(0.2, 0.9 * err ** -0.2); continue; }
+    // events, checked on the accepted step
+    if (s[0] > XL1 && nxt[0] <= XL1) {
+      const [hh, se] = refine(q => q[0] - XL1, h);
+      push(t + hh, se); return { kind: "cross", t: t + hh, s: se, ts, ss };
+    }
+    if (rMoon(nxt) < RM * 0.999) {
+      const [hh, se] = refine(q => rMoon(q) - RM * 0.999, h);
+      push(t + hh, se); return { kind: "crash", t: t + hh, s: se, ts, ss };
+    }
+    if (rMoon(nxt) > 0.6) { push(t + h, nxt); return { kind: "escape", t: t + h, s: Float64Array.from(nxt), ts, ss }; }
+    t += h; s.set(nxt); k1.set(K[6]); push(t, s);
+    if (clip) return { kind: "time", t, s: Float64Array.from(s), ts, ss };
+    h *= Math.min(5, 0.9 * Math.max(err, 1e-10) ** -0.2);
+  }
+  return { kind: "time", t, s: Float64Array.from(s), ts, ss };
+}
+
+const DV_DOCK = 20;                              // m/s of each capsule's budget kept for docking
+const T_TCM = 24;                                // course correction at T+24 h
+
+function solve(m, v0, record) {
+  const out = { m, v0, record };
+  const a = fly(state0(m, v0), 0, T_TCM * HOUR, record);
+  out.legA = a;
+  if (a.kind !== "time") return Object.assign(out, { kind: a.kind, tEnd: a.t / HOUR });
+  const s24 = a.s, sp = Math.hypot(s24[2], s24[3]), u = [s24[2] / sp, s24[3] / sp];
+  const from24 = dv => { const s = Float64Array.from(s24); s[2] += dv / VU * u[0]; s[3] += dv / VU * u[1]; return fly(s, a.t, 400 * HOUR, record); };
+  const base = from24(0);
+  out.base = base;
+  if (base.kind === "cross") out.missKm = base.s[1] * KM;
+  const failKind = base.kind === "cross" ? "miss" : base.kind === "time" ? "trapped" : base.kind;
+  // Secant on the along-track kick at T+24 h so that the crossing lands on L1 (y = 0). Uncorrected,
+  // a shot a little fast can hit the Moon on the close pass, so the first guess comes from the
+  // reference sensitivity (about 11 m/s of fix per m/s of muzzle error), not only from the miss.
+  const guess = -(v0 - m.vRef) * m.fixPerMs;
+  const seeds = base.kind === "cross" ? [[0, base.s[1] * KM, base]] : [];
+  for (const d of [guess, guess + 0.3]) {
+    if (seeds.length >= 2 || Math.abs(d) > 150 || seeds.some(q => Math.abs(q[0] - d) < 0.01)) continue;
+    const rr = from24(d); if (rr.kind === "cross") seeds.push([d, rr.s[1] * KM, rr]);
+  }
+  if (seeds.length < 2) return Object.assign(out, { kind: failKind, dvNeed: Math.abs(guess), tEnd: base.t / HOUR });
+  let [d0, y0] = seeds[0], [d1, y1, r1] = seeds[1];
+  let best = null;
+  for (let i = 0; i < 25 && Number.isFinite(y1); i++) {
+    if (Math.abs(y1) < 0.5) { best = { dv: d1, r: r1 }; break; }
+    let d2 = d1 - y1 * (d1 - d0) / (y1 - y0);
+    if (!Number.isFinite(d2)) break;
+    d2 = Math.max(-150, Math.min(150, d2));
+    let r2 = from24(d2), tries = 0;
+    while (r2.kind !== "cross" && tries++ < 6) { d2 = (d1 + d2) / 2; r2 = from24(d2); }
+    if (r2.kind !== "cross") break;
+    d0 = d1; y0 = y1; d1 = d2; y1 = r2.s[1] * KM; r1 = r2;
+  }
+  if (!best) return Object.assign(out, { kind: failKind, dvNeed: null, tEnd: base.t / HOUR });
+  const vArr = Math.hypot(best.r.s[2], best.r.s[3]) * VU;
+  const dvUsed = Math.abs(best.dv) + vArr + DV_DOCK;
+  Object.assign(out, { dvTcm: best.dv, vArr, dvUsed, legC: best.r, tArr: best.r.t / HOUR });
+  if (dvUsed > m.dvTotal) return Object.assign(out, { kind: failKind, dvNeed: Math.abs(best.dv), tEnd: base.t / HOUR });
+  return Object.assign(out, { kind: "docked", kg: m.loxLoaded - m.boilPerH * out.tArr, tEnd: out.tArr });
+}
+
+// Hermite resampling of an integrator leg into points [xKm, yKm, hours], Moon at the origin.
+function resample(leg, dtH) {
+  const pts = [], ts = leg.ts, ss = leg.ss, d = new Float64Array(4);
+  const at = (i, tt) => {
+    const t0 = ts[i], t1 = ts[i + 1], h = t1 - t0, s0 = ss[i], s1 = ss[i + 1];
+    if (h <= 0) return [s0[0], s0[1]];
+    const r = (tt - t0) / h, r2 = r * r, r3 = r2 * r;
+    const h00 = 2 * r3 - 3 * r2 + 1, h10 = r3 - 2 * r2 + r, h01 = -2 * r3 + 3 * r2, h11 = r3 - r2;
+    return [0, 1].map(k => h00 * s0[k] + h10 * h * s0[k + 2] + h01 * s1[k] + h11 * h * s1[k + 2]);
+  };
+  const tA = ts[0], tB = ts[ts.length - 1];
+  let i = 0;
+  for (let tt = tA; ; ) {
+    while (i < ts.length - 2 && ts[i + 1] < tt) i++;
+    const p = at(i, Math.min(tt, tB));
+    pts.push([(p[0] - XM) * KM, p[1] * KM, Math.min(tt, tB) / HOUR]);
+    if (tt >= tB) break;
+    const th = tt / HOUR, step = (th < 4 ? Math.min(dtH, 0.02) : dtH) * HOUR;
+    tt = Math.min(tB, tt + step);
+  }
+  return pts;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Game
+// ---------------------------------------------------------------------------------------------
+const $ = id => document.getElementById(id);
+const fmt = (v, d = 0) => v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const G_MIN = 2300, G_MAX = 2360, SWEEP_S = 1.6;
+const C = getComputedStyle(document.documentElement);
+const col = n => C.getPropertyValue(n).trim();
+const PAL = { space: col("--space"), ink: col("--ink"), dim: col("--dim"), line: col("--line"), orange: col("--orange"),
+  lox: col("--lox"), good: col("--good"), bad: col("--bad"), moon: col("--moon"), maria: col("--maria"), panel: col("--panel") };
+
+const L1_KM = (XL1 - XM) * KM;
+for (const m of Object.values(MODES)) {         // each rail's reference route, its past flights, its window
+  m.ref = solve(m, m.vRef, true);
+  m.refPts = resample(m.ref.legA, 0.25).concat(resample(m.ref.legC, 0.25));
+  m.ghosts = []; m.bands = null;
+}
+
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const game = { kg: 0, shots: 0, docked: 0, streak: 0, best: store.get("l1run.best", 0) };
+let MODE = MODES[store.get("l1run.mode", "flat")] || MODES.flat;
+let flight = null, needleT = 0, lastFrame = performance.now(), briefTimer = 0;
+
+// --- gauge -----------------------------------------------------------------------------------
+const pct = v => (v - G_MIN) / (G_MAX - G_MIN) * 100;
+const WIN_STEP = 0.25;
+function showGauge() {
+  const m = MODE;
+  $("z-low").style.left = "0%"; $("z-low").style.width = pct(m.v0Min) + "%";
+  $("z-ref").style.left = pct(m.ref.v0) + "%";
+  $("vmin-txt").textContent = fmt(m.v0Min, 1);
+  const wrap = $("z-ok-wrap"); wrap.replaceChildren();
+  if (!m.bands) { $("band-txt").textContent = "Working out the window…"; return; }
+  for (const [a, b] of m.bands) {
+    const z = document.createElement("div"); z.className = "zone ok";
+    z.style.left = pct(a - WIN_STEP / 2) + "%"; z.style.width = (pct(b + WIN_STEP / 2) - pct(a - WIN_STEP / 2)) + "%"; wrap.appendChild(z);
+  }
+  $("band-txt").textContent = m.bands.length
+    ? "Reaches the depot: " + m.bands.map(([a, b]) => fmt(a - WIN_STEP / 2, 1) + "–" + fmt(b + WIN_STEP / 2, 1)).join(", ") + " m/s"
+    : "No window found";
+}
+for (let v = G_MIN; v <= G_MAX; v += 10) {
+  const s = document.createElement("span"); s.style.left = pct(v) + "%"; s.textContent = fmt(v);
+  if ((v - G_MIN) % 20) s.className = "minor";
+  if (v === G_MIN) s.style.transform = "none"; if (v === G_MAX) s.style.transform = "translateX(-100%)";
+  $("ticks").appendChild(s);
+}
+const needleSpeed = () => {                     // triangle wave across the gauge
+  const p = (needleT / SWEEP_S) % 2, f = p < 1 ? p : 2 - p;
+  return G_MIN + f * (G_MAX - G_MIN);
+};
+
+// Work out each rail's launch window (where the T+24 h fix fits the propellant) without freezing
+// the page: the chosen rail first, then the other one.
+(function scanWindows() {
+  const queue = [MODE, ...Object.values(MODES).filter(m => m !== MODE)];
+  let m = null, v = 0, ok = [];
+  const next = () => {
+    if (!m) { m = queue.shift(); if (!m) return; v = Math.ceil(m.v0Min / WIN_STEP) * WIN_STEP; ok = []; }
+    const t0 = performance.now();
+    while (v <= G_MAX && performance.now() - t0 < 12) { ok.push([v, solve(m, v, false).kind === "docked"]); v += WIN_STEP; }
+    if (v <= G_MAX) return setTimeout(next, 0);
+    const bands = [];
+    for (const [vv, good] of ok) {
+      const last = bands[bands.length - 1];
+      if (good) { if (last && Math.abs(last[1] - (vv - WIN_STEP)) < 1e-9) last[1] = vv; else bands.push([vv, vv]); }
+    }
+    m.bands = bands;
+    if (m === MODE) showGauge();
+    m = null; setTimeout(next, 0);
+  };
+  setTimeout(next, 50);
+})();
+
+// --- launch site -----------------------------------------------------------------------------
+function setMode(key) {
+  if (flight || !MODES[key] || MODES[key] === MODE) return;
+  MODE = MODES[key]; store.set("l1run.mode", key); SFX.click();
+  $("mode-" + key).checked = true;
+  $("result").hidden = true; $("clock").hidden = true;
+  showGauge(); layout(); scopeCaption();
+}
+for (const el of document.querySelectorAll('input[name="mode"]')) el.addEventListener("change", () => setMode(el.value));
+$("mode-" + MODE.key).checked = true;
+showGauge();
+
+// --- sound: everything synthesized with Web Audio, no files ----------------------------------
+const SFX = (() => {
+  let ac = null, out = null, noiseBuf = null, on = store.get("l1run.sound", true);
+  const ensure = () => {                         // the context starts on the first click or key press
+    if (!on) return null;
+    if (!ac) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      try { ac = new AC(); } catch (e) { return null; }
+      const comp = ac.createDynamicsCompressor(); out = ac.createGain(); out.gain.value = 0.5;
+      out.connect(comp); comp.connect(ac.destination);
+    }
+    if (ac.state === "suspended") ac.resume();
+    return ac;
+  };
+  const noise = () => {
+    if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const s = ac.createBufferSource(); s.buffer = noiseBuf; s.loop = true; return s;
+  };
+  const env = (g, t0, a, peak, d) => { g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(peak, t0 + a); g.gain.exponentialRampToValueAtTime(0.0001, t0 + a + d); };
+  const tone = (type, f0, f1, t0, dur, peak, a = 0.005) => {
+    const o = ac.createOscillator(), g = ac.createGain(); o.type = type;
+    o.frequency.setValueAtTime(f0, t0); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t0 + a + dur);
+    env(g, t0, a, peak, dur); o.connect(g); g.connect(out); o.start(t0); o.stop(t0 + a + dur + 0.05);
+  };
+  const hiss = (t0, dur, type, f0, f1, q, peak, a = 0.01) => {
+    const s = noise(), fl = ac.createBiquadFilter(), g = ac.createGain();
+    fl.type = type; fl.frequency.setValueAtTime(f0, t0); if (f1 !== f0) fl.frequency.exponentialRampToValueAtTime(f1, t0 + a + dur); fl.Q.value = q;
+    env(g, t0, a, peak, dur); s.connect(fl); fl.connect(g); g.connect(out); s.start(t0); s.stop(t0 + a + dur + 0.05);
+  };
+  const now = (d = 0) => ac.currentTime + d;
+  return {
+    get on() { return on; },
+    set(v) { on = v; store.set("l1run.sound", v); if (ac) { if (v) ac.resume(); else ac.suspend(); } if (v) ensure(); },
+    click() { if (!ensure()) return; tone("square", 1200, 900, now(), 0.04, 0.06, 0.002); },
+    charge(dur) {                                // the linear motor: a whine that climbs with the speed
+      if (!ensure()) return; const t = now();
+      const o1 = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter(), g = ac.createGain();
+      o1.type = "sawtooth"; o2.type = "square";
+      o1.frequency.setValueAtTime(60, t); o1.frequency.exponentialRampToValueAtTime(1100, t + dur);
+      o2.frequency.setValueAtTime(30.5, t); o2.frequency.exponentialRampToValueAtTime(552, t + dur);
+      lp.type = "lowpass"; lp.Q.value = 7; lp.frequency.setValueAtTime(250, t); lp.frequency.exponentialRampToValueAtTime(6000, t + dur);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.16, t + 0.1);
+      g.gain.setValueAtTime(0.16, t + dur - 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.05);
+      o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(out);
+      o1.start(t); o2.start(t); o1.stop(t + dur + 0.1); o2.stop(t + dur + 0.1);
+      hiss(t, dur, "bandpass", 300, 5000, 1.2, 0.05, dur * 0.8);
+    },
+    release(delay = 0) {                         // the capsule leaves the cradle: thump, crack, zip
+      if (!ensure()) return; const t = now(delay);
+      tone("sine", 140, 32, t, 0.5, 0.7, 0.002);
+      hiss(t, 0.3, "highpass", 2500, 1200, 0.7, 0.35, 0.002);
+      tone("triangle", 2200, 260, t, 0.3, 0.07, 0.002);
+    },
+    rocket(dur) {                                // a rocket engine: ignition pop, roar, crackle, rumble, tail-off
+      if (!ensure()) return; const t = now(), end = t + dur;
+      hiss(t, 0.12, "lowpass", 900, 300, 0.7, 0.35, 0.004);                 // ignition
+      const roar = noise(), lp = ac.createBiquadFilter(), g = ac.createGain();
+      lp.type = "lowpass"; lp.Q.value = 1.2; lp.frequency.setValueAtTime(400, t);
+      lp.frequency.linearRampToValueAtTime(1100, t + 0.25); lp.frequency.linearRampToValueAtTime(800, end); lp.frequency.linearRampToValueAtTime(250, end + 0.35);
+      const wob = ac.createOscillator(), wobG = ac.createGain();             // the flame's slow flutter on the filter
+      wob.frequency.value = 7; wobG.gain.value = 180; wob.connect(wobG); wobG.connect(lp.frequency);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.12);
+      g.gain.setValueAtTime(0.32, end); g.gain.exponentialRampToValueAtTime(0.0001, end + 0.4);
+      roar.connect(lp); lp.connect(g); g.connect(out);
+      const crack = noise(), hp = ac.createBiquadFilter(), cg = ac.createGain(), am = ac.createOscillator(), amG = ac.createGain();
+      hp.type = "highpass"; hp.frequency.value = 3500;                       // crackle, chopped by a fast square
+      am.type = "square"; am.frequency.value = 23; amG.gain.value = 0.05; am.connect(amG); amG.connect(cg.gain);
+      cg.gain.setValueAtTime(0.05, t); cg.gain.setValueAtTime(0.05, end); cg.gain.linearRampToValueAtTime(0, end + 0.2);
+      crack.connect(hp); hp.connect(cg); cg.connect(out);
+      const rum = ac.createOscillator(), rg = ac.createGain(); rum.type = "sawtooth";
+      rum.frequency.setValueAtTime(48, t); rum.frequency.linearRampToValueAtTime(42, end);
+      const rlp = ac.createBiquadFilter(); rlp.type = "lowpass"; rlp.frequency.value = 160;
+      rg.gain.setValueAtTime(0.0001, t); rg.gain.exponentialRampToValueAtTime(0.22, t + 0.15);
+      rg.gain.setValueAtTime(0.22, end); rg.gain.exponentialRampToValueAtTime(0.0001, end + 0.45);
+      rum.connect(rlp); rlp.connect(rg); rg.connect(out);
+      for (const n of [roar, crack]) { n.start(t); n.stop(end + 0.5); }
+      for (const o of [wob, am, rum]) { o.start(t); o.stop(end + 0.5); }
+    },
+    dock() {                                     // clunk of the latch, then a bright chord
+      if (!ensure()) return; const t = now();
+      tone("sine", 95, 70, t, 0.25, 0.4, 0.003); hiss(t, 0.08, "bandpass", 3000, 3000, 3, 0.12, 0.002);
+      [659.25, 830.61, 987.77, 1318.51].forEach((f, i) => tone("sine", f, f, t + 0.12 + i * 0.07, 1.0 - i * 0.12, 0.16, 0.01));
+      hiss(t + 0.12, 0.9, "bandpass", 7000, 9000, 4, 0.03, 0.05);
+    },
+    streak(n) {                                  // a rising run, one note per capsule in a row (up to 8)
+      if (!ensure()) return; const t = now(0.55), scale = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51];
+      for (let i = 0; i < Math.min(n, 8); i++) tone("triangle", scale[i], scale[i], t + i * 0.06, 0.18, 0.09, 0.004);
+    },
+    crash() {
+      if (!ensure()) return; const t = now();
+      tone("sine", 110, 28, t, 0.9, 0.8, 0.003); hiss(t, 1.1, "lowpass", 1800, 120, 0.5, 0.55, 0.003);
+    },
+    fail() {                                     // missed or lost: two falling notes
+      if (!ensure()) return; const t = now();
+      tone("triangle", 440, 415, t, 0.22, 0.16); tone("triangle", 330, 220, t + 0.22, 0.6, 0.16);
+    },
+  };
+})();
+function soundButton() { const b = $("sound"); b.setAttribute("aria-pressed", String(SFX.on)); b.textContent = SFX.on ? "Sound on" : "Sound off"; }
+$("sound").addEventListener("click", () => { SFX.set(!SFX.on); soundButton(); SFX.click(); });
+soundButton();
+
+// --- juice: shake, sparks, rings and flashes on the map ----------------------------------------
+const CALM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FX = { shake: 0, parts: [], rings: [], flash: null };
+const kick = a => { if (!CALM) FX.shake = Math.max(FX.shake, a); };
+function burst(x, y, color, n, speed, life, size = 2) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, v = speed * (0.3 + Math.random() * 0.7);
+    FX.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: life * (0.6 + Math.random() * 0.4), max: life, color, size: size * (0.6 + Math.random() * 0.8) });
+  }
+}
+const ring = (x, y, color, r0, r1, life, delay = 0) => FX.rings.push({ x, y, color, r0, r1, life, max: life, delay });
+const flash = (color, a) => { if (!CALM) FX.flash = { color, a }; };
+function stepFX(dt) {
+  FX.shake *= Math.exp(-dt * 7); if (FX.shake < 0.05) FX.shake = 0;
+  for (const p of FX.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx *= Math.exp(-dt * 2.5); p.vy *= Math.exp(-dt * 2.5); p.life -= dt; }
+  FX.parts = FX.parts.filter(p => p.life > 0);
+  for (const r of FX.rings) { if (r.delay > 0) r.delay -= dt; else r.life -= dt; }
+  FX.rings = FX.rings.filter(r => r.life > 0);
+  if (FX.flash) { FX.flash.a -= dt * 0.6; if (FX.flash.a <= 0) FX.flash = null; }
+}
+function drawFX() {
+  cx.save(); cx.globalCompositeOperation = "lighter";
+  for (const r of FX.rings) {
+    if (r.delay > 0) continue;
+    const k = 1 - r.life / r.max, e = 1 - (1 - k) ** 3;
+    cx.strokeStyle = r.color; cx.globalAlpha = (1 - k) * 0.9; cx.lineWidth = 2.5 * (1 - k) + 0.5;
+    cx.beginPath(); cx.arc(r.x, r.y, r.r0 + (r.r1 - r.r0) * e, 0, Math.PI * 2); cx.stroke();
+  }
+  for (const p of FX.parts) { cx.fillStyle = p.color; cx.globalAlpha = Math.min(1, p.life / p.max * 1.5); cx.beginPath(); cx.arc(p.x, p.y, p.size, 0, Math.PI * 2); cx.fill(); }
+  cx.restore();
+  if (FX.flash) { cx.save(); cx.fillStyle = FX.flash.color; cx.globalAlpha = Math.max(0, FX.flash.a); cx.fillRect(-20, -20, W + 40, H + 40); cx.restore(); }
+}
+// numbers that count up instead of jumping
+let shownKg = 0;
+function popStat(id) { const el = $(id); el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+
+// --- launch ----------------------------------------------------------------------------------
+function launch() {
+  if (flight) return;
+  const v0 = needleSpeed();
+  const r = solve(MODE, v0, true);
+  const pts = resample(r.legA, 0.25);
+  let ghost = null, tcmAt = null;
+  if (r.kind === "docked") {
+    tcmAt = pts.length - 1;
+    pts.push(...resample(r.legC, 0.25).slice(1));
+    if (Math.abs(r.dvTcm) > 0.05) ghost = resample(r.base, 0.25);
+  } else if (r.base) {
+    pts.push(...resample(r.base, 0.25).slice(1));
+  }
+  flight = { r, pts, ghost, tcmAt, h: 0, i: 0, pause: 0, burnShown: false, done: false, end: pts[pts.length - 1][2] };
+  if (scopeVisible) startShot(MODE, v0); else shot = null;
+  // without the spyglass, a short wind-up stands in for the 2.4 s on the rail
+  flight.padHold = scopeVisible ? 0 : 0.35;
+  SFX.charge(scopeVisible ? shot.tRail : 0.35);
+  if (!scopeVisible) SFX.release(0.35);
+  const b = $("launch"); b.classList.remove("kick"); void b.offsetWidth; b.classList.add("kick");
+  game.shots++;
+  for (const el of document.querySelectorAll('input[name="mode"]')) el.disabled = true;
+  $("launch").disabled = true; $("launch").textContent = "In flight";
+  $("result").hidden = true; $("clock").hidden = false;
+}
+
+function finish() {
+  const r = flight.r, m = r.m, card = $("result");
+  let title, text, facts = "Muzzle " + fmt(r.v0, 1) + " m/s";
+  if (r.kind === "docked") {
+    game.kg += r.kg; game.docked++; game.streak++;
+    if (game.streak > game.best) { game.best = game.streak; store.set("l1run.best", game.best); }
+    if (game.streak >= 2) SFX.streak(game.streak);
+    title = "Docked · +" + fmt(r.kg) + " kg LOX";
+    const without = r.base.kind === "cross" ? "crossed " + fmt(Math.abs(r.missKm)) + " km from L1"
+      : r.base.kind === "crash" ? "hit the Moon at T+" + fmt(r.base.t / HOUR) + " h"
+      : r.base.kind === "escape" ? "drifted off into deep space" : "kept looping the Moon";
+    text = Math.abs(r.dvTcm) < 0.05
+      ? "Spot on. No course correction needed."
+      : "Uncorrected, it would have " + without + ". The T+24 h burn of " + fmt(Math.abs(r.dvTcm), 1) + " m/s fixed it.";
+    facts += " · " + fmt(r.tArr) + " h · brake " + fmt(r.vArr) + " m/s · " + fmt(m.dvTotal - r.dvUsed) + " m/s spare";
+  } else {
+    game.streak = 0;
+    const spare = m.dvTotal - DV_DOCK - (r.vArr || m.ref.vArr);
+    const fix = r.dvNeed
+      ? " The T+24 h fix would need about " + fmt(r.dvNeed, 1) + " m/s; the capsule has " + fmt(Math.max(0, spare), 1) + " m/s to spare."
+      : " No T+24 h burn along the track can bring it back.";
+    const low = r.v0 < m.v0Min;
+    if (r.kind === "crash" && low) { title = "Fell back on the Moon"; text = "Below " + fmt(m.v0Min, 1) + " m/s the capsule doesn't have the energy to pass L1."; }
+    else if (r.kind === "crash") { title = "Hit the Moon"; text = "It came back to the Moon and struck the surface at T+" + fmt(r.tEnd) + " h." + fix; }
+    else if (r.kind === "trapped" && low) { title = "Trapped by the Moon"; text = "After 400 h it is still looping the Moon. Below " + fmt(m.v0Min, 1) + " m/s it can never pass L1."; }
+    else if (r.kind === "trapped") { title = "Trapped by the Moon"; text = "After 400 h it is still looping the Moon." + fix; }
+    else if (r.kind === "escape") { title = "Lost to deep space"; text = "Too fast: it left the Moon's neighbourhood without crossing L1." + fix; }
+    else { title = "Missed the depot"; text = "It crossed " + fmt(Math.abs(r.missKm)) + " km from L1." + fix; }
+    facts += " · on this rail 1 m/s at the muzzle moves the arrival about " + fmt(Math.round(m.kmPerMs / 100) * 100) + " km";
+  }
+  if (r.kind === "docked") { popStat("s-kg"); popStat("s-docked"); popStat("s-streak"); } else if (game.shots > 1) popStat("s-streak");
+  $("r-title").textContent = title; $("r-text").textContent = text; $("r-facts").textContent = facts;
+  card.className = "result " + (r.kind === "docked" ? "ok" : "fail"); card.hidden = false; $("clock").hidden = true;
+  clearTimeout(briefTimer); briefTimer = setTimeout(() => card.classList.add("brief"), 7000);   // phones: keep the title only
+  m.ghosts.push({ pts: flight.pts, ok: r.kind === "docked" }); if (m.ghosts.length > 8) m.ghosts.shift();
+  updateStats();
+  flight = null; shot = null; scopeCaption();                 // the next cradle is loaded
+  for (const el of document.querySelectorAll('input[name="mode"]')) el.disabled = false;
+  $("launch").disabled = false; $("launch").textContent = "Launch";
+}
+
+function updateStats() {
+  $("s-kg").textContent = fmt(shownKg) + " kg";
+  $("s-docked").textContent = game.docked + " / " + game.shots;
+  $("s-streak").textContent = game.streak + " (best " + game.best + ")";
+}
+
+$("launch").addEventListener("click", launch);
+addEventListener("keydown", e => {
+  if (e.code === "KeyM" && !e.repeat) { SFX.set(!SFX.on); soundButton(); SFX.click(); return; }
+  if ((e.code === "Space" || e.code === "Enter") && !e.repeat && ![$("launch"), $("sound")].includes(document.activeElement)) { e.preventDefault(); launch(); }
+});
+
+// --- drawing ---------------------------------------------------------------------------------
+const cv = $("scene"), cx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1, view = null;
+const STARS = Array.from({ length: 160 }, (_, i) => { const a = Math.sin(i * 12.9898) * 43758.5453; const b = Math.sin(i * 78.233) * 12345.678;
+  return [a - Math.floor(a), b - Math.floor(b), (i % 7 === 0) ? 1.4 : 0.8]; });
+
+function layout() {
+  DPR = Math.min(2, devicePixelRatio || 1);
+  W = innerWidth; H = innerHeight;
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  const top = $("hud").getBoundingClientRect().bottom + 40, bottom = $("controls").getBoundingClientRect().top - 10;
+  document.documentElement.style.setProperty("--hud-h", ($("hud").getBoundingClientRect().height + 16) + "px");
+  // world box around the reference route and the depot (km, Moon at origin)
+  let x0 = L1_KM, x1 = 0, y0 = 0, y1 = 0;
+  for (const p of MODE.refPts) { x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); }
+  const padX = (x1 - x0) * 0.10, padY = (y1 - y0) * 0.14;
+  x0 -= padX * 1.3; x1 += padX * 1.6; y0 -= padY; y1 += padY;
+  const minY = (x1 - x0) * 0.5;                     // a direct route is flat: keep some sky around it
+  if (y1 - y0 < minY) { const c = (y0 + y1) / 2; y0 = c - minY / 2; y1 = c + minY / 2; }
+  const STRIP = 46;                                 // room on the Earth side for the Earth marker
+  const portrait = (bottom - top) > (W - 32) * 1.15; // turn the map so Earth is at the bottom
+  scopeVisible = getComputedStyle($("scope")).display !== "none";
+  const bx0 = portrait ? 16 : 16 + STRIP, bx1 = W - 16 - (scopeVisible ? 250 : 0), by0 = top, by1 = Math.max(top + 120, bottom - (portrait ? STRIP : 0));
+  const bw = bx1 - bx0, bh = by1 - by0;
+  const ww = portrait ? (y1 - y0) : (x1 - x0), wh = portrait ? (x1 - x0) : (y1 - y0);
+  const s = Math.min(bw / ww, bh / wh);
+  const mx = (x0 + x1) / 2, my = (y0 + y1) / 2, sx = (bx0 + bx1) / 2, sy = (by0 + by1) / 2;
+  const p = (x, y) => portrait ? [sx - (y - my) * s, sy - (x - mx) * s] : [sx + (x - mx) * s, sy - (y - my) * s];
+  const l1 = p(L1_KM, 0);
+  view = { s, portrait, p, earth: portrait ? [l1[0], by1 + STRIP / 2 + 4] : [bx0 - STRIP / 2 - 2, l1[1]] };
+}
+addEventListener("resize", layout);
+
+function path(pts, upto) {
+  cx.beginPath();
+  for (let i = 0; i <= upto && i < pts.length; i++) { const [a, b] = view.p(pts[i][0], pts[i][1]); i ? cx.lineTo(a, b) : cx.moveTo(a, b); }
+}
+
+function drawScene(now) {
+  const sx0 = FX.shake ? (Math.random() - 0.5) * 2 * FX.shake : 0, sy0 = FX.shake ? (Math.random() - 0.5) * 2 * FX.shake : 0;
+  cx.setTransform(DPR, 0, 0, DPR, sx0 * DPR, sy0 * DPR);
+  cx.fillStyle = PAL.space; cx.fillRect(-20, -20, W + 40, H + 40);
+  for (const [a, b, r] of STARS) { cx.fillStyle = PAL.dim; cx.globalAlpha = r > 1 ? 0.7 : 0.4; cx.fillRect(a * W, b * H, r, r); }
+  cx.globalAlpha = 1;
+
+  // Earth marker on the edge it lies beyond
+  const [ex, ey] = view.p(0, 0), [lx, ly] = view.p(L1_KM, 0);
+  {
+    const [mx, my] = view.earth, re = 9;
+    cx.strokeStyle = PAL.line; cx.setLineDash([2, 6]); cx.lineWidth = 1;          // Earth–Moon line
+    cx.beginPath(); cx.moveTo(ex, ey); cx.lineTo(view.portrait ? mx : mx + re, view.portrait ? my - re : my); cx.stroke(); cx.setLineDash([]);
+    cx.fillStyle = PAL.lox; cx.beginPath(); cx.arc(mx, my, re, 0, Math.PI * 2); cx.fill();
+    cx.fillStyle = PAL.dim; cx.font = "600 12px " + col("--f-display"); cx.textBaseline = "middle";
+    if (view.portrait) { cx.textAlign = "left"; cx.fillText("EARTH · 326,400 KM BEYOND L1", mx + re + 8, my); }
+    else { cx.textAlign = "center"; cx.fillText("EARTH", mx, my + re + 12); cx.fillText("326,400 KM", mx, my + re + 26); }
+  }
+
+  // reference route
+  cx.strokeStyle = PAL.dim; cx.globalAlpha = 0.35; cx.lineWidth = 1; cx.setLineDash([3, 5]);
+  path(MODE.refPts, MODE.refPts.length); cx.stroke(); cx.setLineDash([]); cx.globalAlpha = 1;
+
+  // past flights from this rail
+  const ghosts = MODE.ghosts;
+  ghosts.forEach((g, k) => { cx.strokeStyle = g.ok ? PAL.lox : PAL.bad; cx.globalAlpha = 0.14 + 0.26 * (k + 1) / ghosts.length; cx.lineWidth = 1.2;
+    path(g.pts, g.pts.length); cx.stroke(); });
+  cx.globalAlpha = 1;
+
+  // Moon, true scale (with a floor so it stays visible on a phone)
+  const rm = Math.max(7, 1737.4 * view.s);
+  cx.fillStyle = PAL.moon; cx.beginPath(); cx.arc(ex, ey, rm, 0, Math.PI * 2); cx.fill();
+  cx.fillStyle = PAL.maria;
+  for (const [a, b, r] of [[-0.35, 0.3, 0.32], [-0.1, -0.25, 0.26], [0.25, 0.35, 0.18], [-0.5, -0.15, 0.16]]) {
+    const [px, py] = view.portrait ? [ex - b * rm, ey - a * rm] : [ex + a * rm, ey - b * rm];
+    cx.beginPath(); cx.arc(px, py, r * rm, 0, Math.PI * 2); cx.fill();
+  }
+  // the chosen rail: a tick from the surface along the launch direction (tilted 30° on the slope)
+  const M = MODE, sk = [(M.site[0] - XM) * KM, M.site[1] * KM];
+  const [sx, sy] = view.p(sk[0], sk[1]);
+  const unit = v => { const [qx, qy] = view.p(sk[0] + v[0] * 9000, sk[1] + v[1] * 9000), d = Math.hypot(qx - sx, qy - sy) || 1; return [(qx - sx) / d, (qy - sy) / d]; };
+  const ue = unit(M.east), ud = unit(M.dir);
+  cx.strokeStyle = PAL.orange; cx.lineWidth = 2.5; cx.lineCap = "round";
+  cx.beginPath(); cx.moveTo(sx - ue[0] * 5, sy - ue[1] * 5); cx.lineTo(sx, sy); cx.lineTo(sx + ud[0] * 8, sy + ud[1] * 8); cx.stroke(); cx.lineCap = "butt";
+  cx.fillStyle = PAL.ink; cx.font = "600 12px " + col("--f-display"); cx.textBaseline = "middle";
+  cx.textAlign = "center"; cx.fillText("MOON", ex, ey + rm + 12);
+  cx.fillStyle = PAL.orange; cx.fillText(M.railLabel, ex, ey + rm + 26);
+
+  // depot at L1
+  drawDepot(lx, ly, now);
+
+  // the flight
+  if (flight) {
+    const f = flight;
+    if (f.ghost && f.h >= T_TCM) {
+      let j = 0; while (j < f.ghost.length - 1 && f.ghost[j + 1][2] <= f.h) j++;
+      cx.strokeStyle = PAL.bad; cx.globalAlpha = 0.55; cx.lineWidth = 1.2; cx.setLineDash([4, 4]);
+      path(f.ghost, j); cx.stroke(); cx.setLineDash([]); cx.globalAlpha = 1;
+      if (j > 3) { const [gx, gy] = view.p(f.ghost[j][0], f.ghost[j][1]); cx.fillStyle = PAL.bad; cx.font = "500 11px " + col("--f-data");
+        const right = gx > W - 140; cx.textAlign = right ? "right" : "left"; cx.fillText("without the fix", right ? gx - 6 : gx + 6, gy - 8); }
+    }
+    cx.strokeStyle = PAL.lox; cx.lineWidth = 2; path(f.pts, f.i); cx.stroke();
+    const p = f.pts[f.i], [px, py] = view.p(p[0], p[1]);
+    // glow round the capsule and a sparkle trail while it moves
+    const glow = cx.createRadialGradient(px, py, 0, px, py, 14);
+    glow.addColorStop(0, PAL.lox + "aa"); glow.addColorStop(1, PAL.lox + "00");
+    cx.fillStyle = glow; cx.beginPath(); cx.arc(px, py, 14, 0, Math.PI * 2); cx.fill();
+    if (f.h > 0 && f.h < f.end && f.pause <= 0 && Math.random() < 0.6)
+      FX.parts.push({ x: px, y: py, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12, life: 0.7, max: 0.7, color: PAL.lox, size: 1.2 });
+    if (f.pause > 0 && !f.done && f.rocket) {                    // the T+24 h burn
+      const exhaustX = drawPlume(f, px, py, now);
+      const label = "T+24 h burn " + (f.r.dvTcm >= 0 ? "+" : "−") + fmt(Math.abs(f.r.dvTcm), 1) + " m/s · " + (f.r.dvTcm < 0 ? "braking" : "speeding up");
+      cx.font = "600 13px " + col("--f-data"); cx.fillStyle = PAL.orange;
+      // the label goes on the side away from the plume, unless that runs off the screen
+      let right = exhaustX > 0.2 ? true : exhaustX < -0.2 ? false : px > W - 230;
+      if (right && px < 260) right = false; if (!right && px > W - 260) right = true;
+      cx.textAlign = right ? "right" : "left";
+      cx.fillText(label, right ? px - 14 : px + 14, py - 14);
+    }
+    cx.fillStyle = PAL.ink; cx.beginPath(); cx.arc(px, py, 3.5, 0, Math.PI * 2); cx.fill();
+  }
+  drawFX();
+}
+
+// The engine's exhaust, opposite to the thrust: a correction that slows the capsule fires
+// forward along the track (the plume runs ahead of it), one that speeds it up fires backward.
+function drawPlume(f, px, py, now) {
+  const i = f.i, a = f.pts[Math.max(0, i - 2)], b = f.pts[Math.min(f.pts.length - 1, i + 2)];
+  const [ax, ay] = view.p(a[0], a[1]), [bx, by] = view.p(b[0], b[1]);
+  const d = Math.hypot(bx - ax, by - ay) || 1, s = f.r.dvTcm < 0 ? 1 : -1;
+  const ux = s * (bx - ax) / d, uy = s * (by - ay) / d, nx = -uy, ny = ux;          // exhaust direction and its normal
+  const k = Math.min(1, (1.6 - f.pause) / 0.15) * Math.min(1, f.pause / 0.3);         // ignition and shutdown
+  const len = (36 + 10 * Math.sin(now / 37) + 8 * Math.random()) * k, wid = 7 * k;
+  cx.save(); cx.globalCompositeOperation = "lighter";
+  for (const [l, w, c, al] of [[len * 1.5, wid * 1.6, PAL.orange, 0.35], [len, wid, PAL.orange, 0.8], [len * 0.5, wid * 0.5, PAL.ink, 0.95]]) {
+    const g = cx.createLinearGradient(px, py, px + ux * l, py + uy * l);
+    g.addColorStop(0, c); g.addColorStop(1, c + "00");
+    cx.fillStyle = g; cx.globalAlpha = al;
+    cx.beginPath(); cx.moveTo(px + nx * w * 0.35, py + ny * w * 0.35);
+    cx.quadraticCurveTo(px + ux * l * 0.35 + nx * w, py + uy * l * 0.35 + ny * w, px + ux * l, py + uy * l);
+    cx.quadraticCurveTo(px + ux * l * 0.35 - nx * w, py + uy * l * 0.35 - ny * w, px - nx * w * 0.35, py - ny * w * 0.35);
+    cx.closePath(); cx.fill();
+  }
+  cx.restore();
+  // the trace: hot gas streaming out along the exhaust and cooling as it spreads
+  for (let n = 0; n < 4 * k; n++) {
+    const spread = (Math.random() - 0.5) * 0.35, v = 90 + Math.random() * 110;
+    const cs = Math.cos(spread), sn = Math.sin(spread), vx = (ux * cs - uy * sn) * v, vy = (uy * cs + ux * sn) * v;
+    FX.parts.push({ x: px + ux * 6, y: py + uy * 6, vx, vy, life: 0.9, max: 0.9, color: Math.random() < 0.3 ? PAL.ink : PAL.orange, size: 1.1 + Math.random() * 1.2 });
+  }
+  return ux;
+}
+
+function drawDepot(x, y, now) {
+  cx.save(); cx.translate(x, y);
+  cx.strokeStyle = PAL.line; cx.lineWidth = 1; cx.setLineDash([2, 3]); cx.lineDashOffset = CALM ? 0 : -now / 400;   // a slow turn
+  cx.beginPath(); cx.arc(0, 0, 18, 0, Math.PI * 2); cx.stroke(); cx.setLineDash([]); cx.lineDashOffset = 0;
+  cx.fillStyle = PAL.lox; cx.fillRect(-14, -3, 8, 6); cx.fillRect(6, -3, 8, 6);   // panels
+  cx.fillStyle = PAL.ink; cx.beginPath(); cx.arc(0, 0, 5, 0, Math.PI * 2); cx.fill();
+  cx.textAlign = "center"; cx.textBaseline = "middle";
+  cx.fillStyle = PAL.orange; cx.font = "700 14px " + col("--f-display"); cx.fillText("L1 DEPOT", 0, -30);
+  cx.fillStyle = PAL.dim; cx.font = "500 11px " + col("--f-data"); cx.fillText("58,000 km from the Moon", 0, 30);
+  cx.restore();
+}
+
+// --- loop ------------------------------------------------------------------------------------
+function rate(h, end) {                           // flight hours per real second
+  const ss = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  return (3 + 32 * ss(0, 30, h)) * (0.3 + 0.7 * ss(0, 14, end - h));
+}
+// --- spyglass: a side view of the rail, to scale (screens that aren't phones) ---------------------
+// Terrain along each rail from calculos/perfil_railes.py: the SLDEM2015 row (LOLA + Kaguya, ~59 m)
+// through the muzzle, in metres above the muzzle, from 4.1 km behind it to 3.2 km ahead. The rail
+// is the same straight line the site scripts fitted: acceleration behind the muzzle, then the
+// cradle's brake on the same line (on pillars where the ground falls away).
+const PROFILES = {
+  flat: { dx: 59.16, x0: -4141.0, La: 2763.7, Lf: 921.2, title: "Flat rail · to scale", sub: "2.75°N 14.25°W · flat",
+    z: [-13,-14,-11,-9,-9,-10,-7,-4,-4,-4,-4,-2,0,-3,-4,-3,-2,-2,-3,-4,-3,-2,-3,-5,-5,-3,-7,-4,2,2,1,-3,-5,-4,0,2,1,-2,-3,-4,-2,1,3,0,-3,-3,0,0,4,5,5,3,2,4,5,2,0,0,0,0,1,3,5,6,7,11,13,10,2,-9,-21,-30,-33,-25,-14,-4,4,6,3,-1,-7,-13,-17,-20,-24,-32,-43,-54,-63,-71,-74,-72,-66,-61,-58,-53,-51,-53,-55,-65,-72,-81,-94,-106,-114,-118,-122,-127,-128,-128,-129,-129,-129,-131,-130,-130,-130,-131,-133,-132,-131,-132,-132,-132,-133] },
+  slope: { dx: 59.23, x0: -4145.8, La: 2762.0, Lf: 921.0, title: "Slope rail · to scale", sub: "0.0° 84.92°W · 30° · +1,381 m",
+    z: [-2463,-2445,-2411,-2378,-2347,-2314,-2280,-2247,-2209,-2175,-2140,-2103,-2068,-2034,-2005,-1961,-1924,-1878,-1853,-1815,-1779,-1747,-1714,-1668,-1645,-1609,-1570,-1530,-1493,-1459,-1425,-1387,-1352,-1317,-1276,-1238,-1200,-1145,-1122,-1086,-1047,-1011,-977,-942,-909,-879,-839,-796,-758,-723,-681,-658,-615,-574,-534,-499,-462,-423,-375,-347,-325,-275,-238,-198,-163,-132,-104,-68,-28,23,34,71,97,129,160,194,225,247,267,286,302,318,323,325,320,313,314,314,308,305,302,299,295,288,286,281,277,269,257,250,241,228,221,212,202,190,184,177,166,156,149,141,123,101,83,71,65,62,56,46,36,27,19,11,5] },
+};
+const SCOPE_PX = 224, SCOPE_R_M = 2250;          // the circle spans 4.5 km, the same for both rails
+const scopeCv = $("scope-cv"), sc = scopeCv.getContext("2d");
+const SCOPE_STARS = Array.from({ length: 40 }, (_, i) => { const a = Math.sin(i * 91.7) * 9871.3, b = Math.sin(i * 27.1) * 3141.7; return [a - Math.floor(a), b - Math.floor(b)]; });
+let scopeVisible = false, shot = null;
+function scopeCaption() {
+  const P = PROFILES[MODE.key];
+  $("scope-title").textContent = P.title; $("scope-sub").textContent = P.sub;
+  $("scope-live").textContent = fmt(P.La / 1000, 2) + " km at 100 g · " + fmt(P.Lf / 1000, 2) + " km brake";
+}
+function terrainAt(P, x) {
+  const f = (x - P.x0) / P.dx, i = Math.max(0, Math.min(P.z.length - 2, Math.floor(f))), t = Math.min(1, Math.max(0, f - i));
+  return P.z[i] * (1 - t) + P.z[i + 1] * t;
+}
+// The shot along the rail: the muzzle speed comes from the needle and the rail length is fixed,
+// so the acceleration is v^2 / 2L (100 g at 2,328 m/s). The cradle then brakes over 0.92 km.
+function startShot(m, v) {
+  const P = PROFILES[m.key];
+  shot = { P, m, v, t: 0, a: v * v / (2 * P.La), tRail: 2 * P.La / v, ab: v * v / (2 * P.Lf), tB: 2 * P.Lf / v, out: false, outT: 0 };
+}
+function shotState(s) {                          // metres along the rail from the muzzle
+  if (s.t < s.tRail) { const d = -s.P.La + 0.5 * s.a * s.t * s.t; return { cap: d, cradle: d, vNow: s.a * s.t, onRail: true }; }
+  const tau = s.t - s.tRail;
+  return { cap: s.v * tau, cradle: tau < s.tB ? s.v * tau - 0.5 * s.ab * tau * tau : s.P.Lf, vNow: s.v, onRail: false, tau };
+}
+function drawScope(dt) {
+  if (!scopeVisible) return;
+  const S = SCOPE_PX, R = S / 2, Ri = R - 7;
+  if (scopeCv.width !== Math.round(S * DPR)) { scopeCv.width = scopeCv.height = Math.round(S * DPR); }
+  const m = shot ? shot.m : MODE, P = PROFILES[m.key], e = m.elev * Math.PI / 180, u = [Math.cos(e), Math.sin(e)];
+  const mid = (P.Lf - P.La) / 2, cxm = mid * u[0], czm = mid * u[1], k = Ri / SCOPE_R_M;
+  const X = x => R + (x - cxm) * k, Z = z => R - (z - czm) * k;
+  sc.setTransform(DPR, 0, 0, DPR, 0, 0); sc.clearRect(0, 0, S, S);
+  sc.save(); sc.beginPath(); sc.arc(R, R, Ri, 0, Math.PI * 2); sc.clip();
+  sc.fillStyle = PAL.space; sc.fillRect(0, 0, S, S);
+  if (FX.shake) sc.translate((Math.random() - 0.5) * FX.shake, (Math.random() - 0.5) * FX.shake);   // the spyglass trembles too
+  sc.fillStyle = PAL.dim; for (const [a, b] of SCOPE_STARS) { sc.globalAlpha = 0.45; sc.fillRect(a * S, b * S, 1, 1); } sc.globalAlpha = 1;
+  // ground, from the real profile
+  const xEnd = P.x0 + (P.z.length - 1) * P.dx;
+  sc.beginPath(); sc.moveTo(X(P.x0), S + 4);
+  P.z.forEach((z, i) => sc.lineTo(X(P.x0 + i * P.dx), Z(z)));
+  sc.lineTo(X(xEnd), S + 4); sc.closePath();
+  sc.fillStyle = PAL.maria; sc.globalAlpha = 0.55; sc.fill(); sc.globalAlpha = 1; sc.strokeStyle = PAL.moon; sc.lineWidth = 1; sc.stroke();
+  // pillars under the rail wherever it runs above the ground
+  sc.strokeStyle = PAL.dim; sc.lineWidth = 1;
+  for (let s = -P.La; s <= P.Lf; s += 110) {
+    const x = s * u[0], zr = s * u[1], zt = terrainAt(P, x);
+    if ((zr - zt) * k > 1.5) { sc.beginPath(); sc.moveTo(X(x), Z(zr)); sc.lineTo(X(x), Z(zt)); sc.stroke(); }
+  }
+  // the rail: accelerating stretch in orange, the cradle's brake after the muzzle
+  sc.lineCap = "round"; sc.lineWidth = 2.2;
+  sc.strokeStyle = PAL.orange; sc.beginPath(); sc.moveTo(X(-P.La * u[0]), Z(-P.La * u[1])); sc.lineTo(X(0), Z(0)); sc.stroke();
+  sc.strokeStyle = PAL.ink; sc.globalAlpha = 0.55; sc.beginPath(); sc.moveTo(X(0), Z(0)); sc.lineTo(X(P.Lf * u[0]), Z(P.Lf * u[1])); sc.stroke();
+  sc.globalAlpha = 1; sc.lineCap = "butt";
+  // cradle and capsule
+  const st = shot ? shotState(shot) : { cap: -P.La, cradle: -P.La, vNow: 0, onRail: true };
+  const at = s => [X(s * u[0]), Z(s * u[1])];
+  const [qx, qy] = at(st.cradle);
+  sc.save(); sc.translate(qx, qy); sc.rotate(-e); sc.fillStyle = PAL.orange; sc.fillRect(-5, -1.5, 10, 4); sc.restore();
+  const [px, py] = at(st.cap);
+  if (st.vNow > 50) {                            // motion streak: where it was 60 ms ago
+    const [bx, by] = at(st.cap - Math.min(st.vNow * 0.06, 600));
+    const g = sc.createLinearGradient(bx, by, px, py); g.addColorStop(0, PAL.lox + "00"); g.addColorStop(1, PAL.lox);
+    sc.strokeStyle = g; sc.lineWidth = 2.5; sc.beginPath(); sc.moveTo(bx, by); sc.lineTo(px, py); sc.stroke();
+  }
+  if (shot && !st.onRail && !shot.released) { shot.released = true; SFX.release(); kick(5); }
+  if (shot && !st.onRail && st.tau < 0.25) {     // flash at the muzzle on release
+    sc.fillStyle = PAL.ink; sc.globalAlpha = 1 - st.tau / 0.25;
+    sc.beginPath(); sc.arc(X(0), Z(0), 3 + 30 * st.tau, 0, Math.PI * 2); sc.fill(); sc.globalAlpha = 1;
+  }
+  sc.fillStyle = PAL.lox; sc.beginPath(); sc.arc(px, py - 2.5, 2.8, 0, Math.PI * 2); sc.fill();
+  // eyepiece: vignette, reticle and the 1 km bar
+  const vg = sc.createRadialGradient(R, R, Ri * 0.6, R, R, Ri);
+  vg.addColorStop(0, PAL.space + "00"); vg.addColorStop(1, PAL.space + "d0");
+  sc.fillStyle = vg; sc.fillRect(0, 0, S, S);
+  sc.strokeStyle = PAL.dim; sc.globalAlpha = 0.3; sc.lineWidth = 1;
+  sc.beginPath(); sc.moveTo(R - Ri, R); sc.lineTo(R - 9, R); sc.moveTo(R + 9, R); sc.lineTo(R + Ri, R);
+  sc.moveTo(R, R - Ri); sc.lineTo(R, R - 9); sc.moveTo(R, R + 9); sc.lineTo(R, R + Ri); sc.stroke(); sc.globalAlpha = 1;
+  const kmPx = 1000 * k, bx0 = R - kmPx / 2, by0 = S - 30;
+  sc.strokeStyle = PAL.ink; sc.lineWidth = 1.5; sc.beginPath();
+  sc.moveTo(bx0, by0 - 3); sc.lineTo(bx0, by0); sc.lineTo(bx0 + kmPx, by0); sc.lineTo(bx0 + kmPx, by0 - 3); sc.stroke();
+  sc.fillStyle = PAL.ink; sc.font = "500 10px " + col("--f-data"); sc.textAlign = "center"; sc.textBaseline = "bottom"; sc.fillText("1 km", R, by0 - 3);
+  sc.restore();
+  // bezel with a tick every 15 degrees
+  sc.setTransform(DPR, 0, 0, DPR, 0, 0);
+  sc.strokeStyle = PAL.line; sc.lineWidth = 7; sc.beginPath(); sc.arc(R, R, R - 3.5, 0, Math.PI * 2); sc.stroke();
+  sc.strokeStyle = PAL.dim; sc.lineWidth = 1;
+  for (let i = 0; i < 24; i++) { const a = i * Math.PI / 12, l = i % 6 ? 3 : 6;
+    sc.beginPath(); sc.moveTo(R + Math.cos(a) * (R - 1), R + Math.sin(a) * (R - 1)); sc.lineTo(R + Math.cos(a) * (R - 1 - l), R + Math.sin(a) * (R - 1 - l)); sc.stroke(); }
+  // live numbers and the end of the shot (the capsule leaves the circle)
+  if (shot) {
+    if (st.onRail) $("scope-live").textContent = fmt(shot.t, 2) + " s · " + fmt(st.vNow) + " m/s · " + fmt(shot.a / 9.80665) + " g";
+    else $("scope-live").textContent = "Out at " + fmt(shot.v) + " m/s · " + fmt(shot.tRail, 2) + " s";
+    const off = Math.hypot(st.cap * u[0] - cxm, st.cap * u[1] - czm) > SCOPE_R_M + 150;
+    if (!st.onRail && off && !shot.out) { shot.out = true; shot.outT = shot.t; }
+    shot.t += dt;
+  }
+}
+const holding = () => (flight && flight.padHold > 0) || (shot && !(shot.out && shot.t - shot.outT > 0.35));
+
+// The big moments on the map: leaving the Moon, the T+24 h burn, and the end of the flight.
+function leavePad() {
+  const [x, y] = view.p((MODE.site[0] - XM) * KM, MODE.site[1] * KM);
+  burst(x, y, PAL.orange, 22, 90, 0.8); ring(x, y, PAL.orange, 4, 30, 0.6);
+  if (!scopeVisible) kick(4);
+}
+function arrive(f) {
+  const p = f.pts[f.pts.length - 1], [x, y] = view.p(p[0], p[1]);
+  if (f.r.kind === "docked") {
+    const [lx, ly] = view.p(L1_KM, 0);
+    SFX.dock(); kick(3); flash(PAL.lox, 0.10);
+    ring(lx, ly, PAL.lox, 6, 60, 1.1); ring(lx, ly, PAL.ink, 6, 42, 0.9, 0.12); ring(lx, ly, PAL.lox, 6, 90, 1.4, 0.25);
+    burst(lx, ly, PAL.lox, 40, 110, 1.3, 2.2); burst(lx, ly, PAL.ink, 12, 60, 0.9, 1.4);
+  } else if (f.r.kind === "crash") {
+    SFX.crash(); kick(10); flash(PAL.bad, 0.18);
+    burst(x, y, PAL.bad, 36, 120, 1.0, 2.2); burst(x, y, PAL.orange, 18, 70, 0.8, 1.6); ring(x, y, PAL.bad, 4, 40, 0.8);
+  } else {
+    SFX.fail(); burst(x, y, PAL.dim, 16, 40, 1.0, 1.4); ring(x, y, PAL.bad, 4, 24, 0.8);
+  }
+}
+
+function frame(now) {
+  const dt = Math.max(0, Math.min(0.05, (now - lastFrame) / 1000)); lastFrame = now;
+  if (innerWidth !== W || innerHeight !== H) layout();
+  needleT += dt;
+  const v = needleSpeed();
+  $("needle").style.transform = "translateX(" + ($("track").clientWidth * (v - G_MIN) / (G_MAX - G_MIN)) + "px)";
+  $("readout").firstChild.nodeValue = fmt(v, 1) + " ";
+  const inBand = !!(MODE.bands && MODE.bands.some(([a, b]) => v >= a - WIN_STEP / 2 && v <= b + WIN_STEP / 2));
+  $("needle").classList.toggle("in", inBand); $("readout").classList.toggle("in", inBand);
+  if (Math.abs(shownKg - game.kg) > 0.5) { shownKg += (game.kg - shownKg) * Math.min(1, dt * 5); updateStats(); }
+  else if (shownKg !== game.kg) { shownKg = game.kg; updateStats(); }
+  stepFX(dt);
+  if (flight) {
+    const f = flight;
+    let burnNow = false;
+    if (holding()) { if (f.padHold > 0) f.padHold -= dt; /* the map waits at T+0 while the rail fires */ }
+    else if (f.pause > 0) { f.pause -= dt; }
+    else {
+      if (!f.leftPad) { f.leftPad = true; leavePad(); }
+      const prev = f.h;
+      f.h = Math.min(f.end, f.h + rate(f.h, f.end) * dt);
+      // the T+24 h correction: an engine burn with its plume (a dead-on shot has nothing to fix)
+      if (!f.burnShown && f.r.kind === "docked" && Math.abs(f.r.dvTcm) >= 0.05 && prev < T_TCM && f.h >= T_TCM) {
+        f.h = T_TCM; f.burnShown = true; burnNow = true; f.rocket = true; f.pause = 1.6;
+      }
+    }
+    while (f.i < f.pts.length - 1 && f.pts[f.i + 1][2] <= f.h) f.i++;
+    const p = f.pts[f.i];
+    if (burnNow) SFX.rocket(1.6);
+    if (f.rocket && f.pause > 0 && !f.done) kick(1.2);   // the engine's rumble while it fires
+    $("clock").firstChild.nodeValue = "T+ " + fmt(f.h) + " h";
+    $("clock-sub").textContent = holding() ? "on the rail" : fmt(Math.hypot(p[0] - L1_KM, p[1])) + " km to L1";
+    if (f.h >= f.end && f.pause <= 0) {
+      if (!f.done) { f.done = true; f.pause = f.r.kind === "docked" ? 1.0 : 0.6; arrive(f); }
+      else { drawScene(now); drawScope(dt); finish(); requestAnimationFrame(frame); return; }
+    }
+  }
+  drawScene(now);
+  drawScope(dt);
+  requestAnimationFrame(frame);
+}
+
+// expose for checks in the console
+window.L1RUN = { solve, MODES, XL1, MU, L1_KM, setMode };
+updateStats(); scopeCaption();
+const start = () => { layout(); requestAnimationFrame(frame); };
+document.fonts && document.fonts.ready ? document.fonts.ready.then(start, start) : start();
+</script>

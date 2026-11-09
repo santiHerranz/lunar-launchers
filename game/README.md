@@ -1,0 +1,41 @@
+# L1 Oxygen Run by Santi Herranz
+
+**[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)**
+
+A one-button game built on the physics of [Lunar oxygen to L1](../oxygen-to-l1/). A needle sweeps between 2,300 and 2,360 m/s. Press **LAUNCH** or the space bar to fire a capsule of liquid oxygen from the rail. Then watch whether it reaches the depot at L1.
+
+## Two rails
+
+A selector chooses the launch site:
+
+| | Flat rail | Hillside rail |
+|---|---|---|
+| Site | 2.75°N 14.25°W, near the centre of the near side | 0.0°, 84.92°W, on the western limb |
+| Rail | flat, firing east | inclined 30° up a 1,381 m slope |
+| Route | one loop around the Moon, 308 h | direct, 59 h |
+| Delivery window | 2,323.6–2,332.9 m/s | 2,323.4–2,332.6 m/s |
+| Oxygen delivered | 356 kg | 372 kg |
+| Capsule Δv budget | 228.8 m/s | 215.6 m/s |
+
+## How a shot is judged
+
+The flight is integrated in real time with the circular restricted three-body problem (Earth, Moon and capsule, in the rotating frame), the same model as `l1_transferencia.py`. At T+24 h the capsule makes one correction burn along its velocity, aimed with a secant search at the crossing of L1's plane. It delivers if the correction, braking at L1 and the 20 m/s for docking all fit its budget (from `capsula_l1.py`, sized for each route).
+
+The direct route misses three times less per m/s of error. But by T+24 h it has already flown 40 % of its trip, so the correction costs the same on both rails, about 11 m/s for every m/s of muzzle error, and the windows come out equally wide. A shot 1 m/s too fast with no correction would hit the Moon on the flat rail's close pass.
+
+## Details
+
+- On screens of 1000×620 or more, an inset at the bottom right shows the chosen rail in profile and to scale, as if through a telescope. The terrain comes from `perfil_railes.py`, and the circle spans 4.5 km for both rails.
+- The launch plays in real time: 2.4 s at 100 g, then the cradle brakes over 0.92 km. The map waits at T+0 until the capsule leaves the circle.
+- All sounds are synthesised with Web Audio, with no audio files: the rail's hum rising with speed, the release, the correction engine with its plume (forward when braking, backward when accelerating; a perfect shot needs no burn), docking, impact and failure. Press **M** or the sound button to mute.
+- Screen shake, sparks, rings and flashes mark the key moments. They are turned off when the system asks for reduced motion.
+
+## Running it locally
+
+`index.html` is a single self-contained file. Open it with a double click, or serve the folder:
+
+```bash
+python -m http.server
+```
+
+It loads its fonts (Barlow, Barlow Condensed, IBM Plex Mono) from Google Fonts and falls back to system fonts offline.
