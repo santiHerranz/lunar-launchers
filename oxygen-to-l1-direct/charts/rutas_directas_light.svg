@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="540" viewBox="0 0 880 540" font-family="system-ui, -apple-system, &quot;Segoe UI&quot;, sans-serif" role="img" aria-labelledby="t d"><title id="t">Faster direct routes deliver less oxygen</title><desc id="d">Flight time to L1 against liquid oxygen delivered by a 500 kg capsule, for the 16 direct routes found by the slope search. Routes of 13-17 h deliver 225-261 kg; routes of 54-68 h deliver 370-374 kg. The main route, 84.92 W, takes 59 h and delivers 372 kg.</desc>
+<rect width="880" height="540" rx="10" fill="#fcfcfb"/>
+<text x="28.0" y="40.0" font-size="20" font-weight="600" fill="#0b0b0b" text-anchor="start">Faster direct routes deliver less oxygen</text>
+<text x="28.0" y="64.0" font-size="13.5" font-weight="400" fill="#52514e" text-anchor="start">Direct routes from the Moon to L1: flight time against liquid oxygen delivered by a 500 kg capsule</text>
+<circle cx="34" cy="94" r="6" fill="#2a78d6"/>
+<text x="46.0" y="98.0" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">Near side, east of 90°W</text>
+<circle cx="254" cy="94" r="6" fill="#eb6834"/>
+<text x="266.0" y="98.0" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">Beyond the 90°W limb: Earth below the horizon most of the month</text>
+<line x1="70" x2="850" y1="448.0" y2="448.0" stroke="#c3c2b7" stroke-width="1"/>
+<text x="60.0" y="452.0" font-size="12" font-weight="400" fill="#898781" text-anchor="end">0</text>
+<line x1="70" x2="850" y1="377.8" y2="377.8" stroke="#e1e0d9" stroke-width="1"/>
+<text x="60.0" y="381.8" font-size="12" font-weight="400" fill="#898781" text-anchor="end">100</text>
+<line x1="70" x2="850" y1="307.6" y2="307.6" stroke="#e1e0d9" stroke-width="1"/>
+<text x="60.0" y="311.6" font-size="12" font-weight="400" fill="#898781" text-anchor="end">200</text>
+<line x1="70" x2="850" y1="237.3" y2="237.3" stroke="#e1e0d9" stroke-width="1"/>
+<text x="60.0" y="241.3" font-size="12" font-weight="400" fill="#898781" text-anchor="end">300</text>
+<line x1="70" x2="850" y1="167.1" y2="167.1" stroke="#e1e0d9" stroke-width="1"/>
+<text x="60.0" y="171.1" font-size="12" font-weight="400" fill="#898781" text-anchor="end">400</text>
+<text x="70.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">0</text>
+<text x="174.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">10</text>
+<text x="278.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">20</text>
+<text x="382.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">30</text>
+<text x="486.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">40</text>
+<text x="590.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">50</text>
+<text x="694.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">60</text>
+<text x="798.0" y="468.0" font-size="12" font-weight="400" fill="#898781" text-anchor="middle">70</text>
+<text x="460.0" y="492.0" font-size="13" font-weight="400" fill="#52514e" text-anchor="middle">Flight time to L1 (h)</text>
+<text transform="translate(20 290.0) rotate(-90)" font-size="13" fill="#52514e" text-anchor="middle">Oxygen delivered (kg)</text>
+<text x="298.8" y="250.0" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="start">Fast: 13–17 h, but they reach L1 at 835–1,096 m/s</text>
+<text x="298.8" y="269.0" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">The capsule burns 137–170 kg of propellant to stop there,</text>
+<text x="298.8" y="287.0" font-size="13" font-weight="400" fill="#52514e" text-anchor="start">and the rail fires at up to 2,568 m/s (22 % more energy per shot)</text>
+<text x="785.1" y="224.7" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Slow: 54–68 h, arriving at 133–158 m/s</text>
+<text x="785.1" y="243.7" font-size="13" font-weight="400" fill="#52514e" text-anchor="end">32–36 kg of propellant is enough</text>
+<circle cx="207.9" cy="290.1" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="216.2" cy="283.1" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="224.5" cy="277.2" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="226.0" cy="276.2" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="231.4" cy="272.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="231.4" cy="272.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="243.5" cy="264.9" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="633.4" cy="188.1" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="639.1" cy="187.9" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="685.4" cy="186.8" r="6" fill="#2a78d6" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="696.3" cy="186.3" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="740.3" cy="185.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="743.1" cy="185.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="770.1" cy="185.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="771.2" cy="185.5" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="781.1" cy="185.6" r="6" fill="#eb6834" stroke="#fcfcfb" stroke-width="2"/>
+<circle cx="685.4" cy="186.8" r="11" fill="none" stroke="#0b0b0b" stroke-width="1.5"/>
+<line x1="677.4" y1="178.8" x2="655.4" y2="151.7" stroke="#52514e" stroke-width="1"/>
+<text x="651.4" y="147.7" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="end">Main route · 84.92°W, rail at 30°</text>
+<text x="651.4" y="164.7" font-size="12.5" font-weight="400" fill="#52514e" text-anchor="end">59 h · 372 kg delivered · brakes 146 m/s</text>
+<line x1="207.9" y1="299.1" x2="207.9" y2="324.1" stroke="#52514e" stroke-width="1"/>
+<text x="201.9" y="340.1" font-size="13" font-weight="600" fill="#0b0b0b" text-anchor="start">Fastest · 93.3°W</text>
+<text x="201.9" y="357.1" font-size="12.5" font-weight="400" fill="#52514e" text-anchor="start">13 h · 225 kg · brakes 1,096 m/s</text>
+<text x="28.0" y="518.0" font-size="11.5" font-weight="400" fill="#898781" text-anchor="start">Only 84.92°W is on the equator; off the equator, a rail aimed due east misses L1 out of plane. Capsule model: capsula_l1.py, 500 kg, 100 g, Isp 310 s.</text>
+</svg>
