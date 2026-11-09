@@ -2,28 +2,29 @@
 
 Rail launchers on the Moon. An electromagnetic rail (a mass driver) runs on solar power and needs no propellant. On the Moon there is no air, and escape speed is only 2.38 km/s, so a rail a few kilometres long is enough to throw payloads into orbit or across the surface.
 
-This repository has three pieces of the same lunar supply chain:
+This repository has four pieces of the same lunar supply chain:
 
 | | Piece | What it does |
 |---|---|---|
-| 1 | [**Polar ice hop**](polar-ice-hop/) | A rail on a sunlit ridge at the south pole throws blocks of ice cut from permanently shadowed craters on a 2,728 km ballistic arc to the equator. The blocks land beside the oxygen rail and resupply its plant with water. |
-| 2 | [**Lunar oxygen to L1**](oxygen-to-l1/) | Oxygen is extracted from the regolith at the equator, liquefied, and launched in 500 kg capsules to the Earth–Moon L1 point. A depot there refuels ships bound for Mars. |
-| 3 | [**L1 Oxygen Run**](game/), a game | One button. Fire a capsule at the right speed and see whether it reaches the depot at L1. You choose between the flat rail and the hillside rail. **[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)** |
+| 1 | [**Lunar oxygen to L1, direct route**](oxygen-to-l1-direct/) (main version) | Oxygen is extracted from the regolith at the equator, liquefied, and fired in 500 kg capsules from a rail inclined 30° up a hillside on the western limb (84.92°W). They fly straight to the Earth–Moon L1 point in 59 h. A depot there refuels ships bound for Mars. |
+| 2 | [**Lunar oxygen to L1, flat rail**](oxygen-to-l1/) | The first design: a flat rail at the centre of the near side. Its capsules loop once around the Moon and take 308 h. This folder also holds the calculation model shared by both routes. |
+| 3 | [**Polar ice hop**](polar-ice-hop/) | A rail on a sunlit ridge at the south pole throws blocks of ice cut from permanently shadowed craters on a 2,728 km ballistic arc. They come down beside the direct oxygen rail and resupply its plant with water. |
+| 4 | [**L1 Oxygen Run**](game/), a game | One button. Fire a capsule at the right speed and see whether it reaches the depot at L1, from the hillside rail or the flat one. **[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)** |
 
-![Lunar oxygen to L1: the flat-rail poster](oxygen-to-l1/plates/lunar_l1_poster.jpg)
+![Lunar oxygen to L1: the direct route up the 30° hillside](oxygen-to-l1-direct/plates/lunar_l1_direct.jpg)
 
 ![Polar ice by rail](polar-ice-hop/plates/salto_polar.jpg)
 
 ## Key numbers
 
-| | Polar ice hop | Oxygen to L1 (flat rail) | Oxygen to L1 (hillside rail) |
+| | Oxygen to L1, direct route | Oxygen to L1, flat rail | Polar ice hop |
 |---|---|---|---|
-| Site | −89.5°, 0° (near Shackleton) → 0.0°, 84.92°W | 2.75°N 14.25°W | 0.0°, 84.92°W, rail at 30° on a 1,381 m slope |
-| Launch speed | 1,543 m/s | 2,328.2 m/s | 2,327.3 m/s |
-| Rail | 1.2 km at 100 g | 2.76 km at 100 g | 2.76 km at 100 g, inclined 30° |
-| Flight | 49 min, ballistic | 308 h, with one loop around the Moon | 59 h, direct |
-| Payload | 940 kg ice block, impacts at 1,546 m/s | 356 kg of liquid oxygen delivered | 372 kg of liquid oxygen delivered |
-| Aim | 6.1 km per m/s of error | 5,730 km per m/s, corrected at T+24 h | 1,925 km per m/s, corrected at T+24 h |
+| Site | 0.0°, 84.92°W, rail at 30° on a 1,381 m slope | 2.75°N 14.25°W | −89.5°, 0° (near Shackleton) → 0.0°, 84.92°W |
+| Launch speed | 2,327.3 m/s | 2,328.2 m/s | 1,543 m/s |
+| Rail | 2.76 km at 100 g, inclined 30° | 2.76 km at 100 g | 1.2 km at 100 g |
+| Flight | 59 h, direct | 308 h, with one loop around the Moon | 49 min, ballistic |
+| Payload | 372 kg of liquid oxygen delivered | 356 kg of liquid oxygen delivered | 940 kg ice block, impacts at 1,546 m/s |
+| Aim | 1,925 km per m/s, corrected at T+24 h | 5,730 km per m/s, corrected at T+24 h | 6.1 km per m/s of error |
 
 ## What's inside
 

@@ -1,8 +1,8 @@
 # Polar ice hop by Santi Herranz
 
-An electromagnetic rail on a sunlit ridge at the Moon's south pole launches blocks of ice cut from permanently shadowed craters. They fly a 2,728 km ballistic arc and come down on the plain next to the oxygen rail's site (0.0°, 84.92°W, the western edge of the near side), where the water accumulates. The blocks don't land: they impact, and what is left is collected.
+An electromagnetic rail on a sunlit ridge at the Moon's south pole launches blocks of ice cut from permanently shadowed craters. They fly a 2,728 km ballistic arc and come down on the plain next to the site of the [direct oxygen rail](../oxygen-to-l1-direct/) (0.0°, 84.92°W, the western edge of the near side), where the water accumulates. The blocks don't land: they impact, and what is left is collected.
 
-It started as a way to replace the hydrogen lost in the ilmenite cycle of the [oxygen plant](../oxygen-to-l1/) (about 6 t a year, which is 54 t of water), but it is sized as a system in its own right.
+It started as a way to replace the hydrogen lost in the ilmenite cycle of the [oxygen plant](../oxygen-to-l1-direct/) (about 6 t a year, which is 54 t of water), but it is sized as a system in its own right.
 
 ![Polar ice by rail](plates/salto_polar.jpg)
 
