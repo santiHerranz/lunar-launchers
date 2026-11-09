@@ -602,27 +602,28 @@ const SFX = (() => {
       hiss(t, 0.3, "highpass", 2500, 1200, 0.7, 0.35, 0.002);
       tone("triangle", 2200, 260, t, 0.3, 0.07, 0.002);
     },
-    rocket(dur) {                                // a rocket engine: ignition pop, roar, crackle, rumble, tail-off
+    rocket(dur, lvl = 1) {                       // a rocket engine: ignition pop, roar, crackle, rumble, tail-off
       if (!ensure()) return; const t = now(), end = t + dur;
-      hiss(t, 0.12, "lowpass", 900, 300, 0.7, 0.35, 0.004);                 // ignition
+      const a = 0.45 + 0.55 * lvl;                                           // a small fix is a softer, duller burn
+      hiss(t, 0.12, "lowpass", 900, 300, 0.7, 0.35 * a, 0.004);             // ignition
       const roar = noise(), lp = ac.createBiquadFilter(), g = ac.createGain();
       lp.type = "lowpass"; lp.Q.value = 1.2; lp.frequency.setValueAtTime(400, t);
-      lp.frequency.linearRampToValueAtTime(1100, t + 0.25); lp.frequency.linearRampToValueAtTime(800, end); lp.frequency.linearRampToValueAtTime(250, end + 0.35);
+      lp.frequency.linearRampToValueAtTime(650 + 450 * lvl, t + Math.min(0.25, dur * 0.6)); lp.frequency.linearRampToValueAtTime(500 + 300 * lvl, end); lp.frequency.linearRampToValueAtTime(250, end + 0.35);
       const wob = ac.createOscillator(), wobG = ac.createGain();             // the flame's slow flutter on the filter
       wob.frequency.value = 7; wobG.gain.value = 180; wob.connect(wobG); wobG.connect(lp.frequency);
-      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32, t + 0.12);
-      g.gain.setValueAtTime(0.32, end); g.gain.exponentialRampToValueAtTime(0.0001, end + 0.4);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.32 * a, t + 0.12);
+      g.gain.setValueAtTime(0.32 * a, end); g.gain.exponentialRampToValueAtTime(0.0001, end + 0.4);
       roar.connect(lp); lp.connect(g); g.connect(out);
       const crack = noise(), hp = ac.createBiquadFilter(), cg = ac.createGain(), am = ac.createOscillator(), amG = ac.createGain();
       hp.type = "highpass"; hp.frequency.value = 3500;                       // crackle, chopped by a fast square
       am.type = "square"; am.frequency.value = 23; amG.gain.value = 0.05; am.connect(amG); amG.connect(cg.gain);
-      cg.gain.setValueAtTime(0.05, t); cg.gain.setValueAtTime(0.05, end); cg.gain.linearRampToValueAtTime(0, end + 0.2);
+      cg.gain.setValueAtTime(0.05 * a, t); cg.gain.setValueAtTime(0.05 * a, end); cg.gain.linearRampToValueAtTime(0, end + 0.2);
       crack.connect(hp); hp.connect(cg); cg.connect(out);
       const rum = ac.createOscillator(), rg = ac.createGain(); rum.type = "sawtooth";
       rum.frequency.setValueAtTime(48, t); rum.frequency.linearRampToValueAtTime(42, end);
       const rlp = ac.createBiquadFilter(); rlp.type = "lowpass"; rlp.frequency.value = 160;
-      rg.gain.setValueAtTime(0.0001, t); rg.gain.exponentialRampToValueAtTime(0.22, t + 0.15);
-      rg.gain.setValueAtTime(0.22, end); rg.gain.exponentialRampToValueAtTime(0.0001, end + 0.45);
+      rg.gain.setValueAtTime(0.0001, t); rg.gain.exponentialRampToValueAtTime(0.22 * a, t + 0.15);
+      rg.gain.setValueAtTime(0.22 * a, end); rg.gain.exponentialRampToValueAtTime(0.0001, end + 0.45);
       rum.connect(rlp); rlp.connect(rg); rg.connect(out);
       for (const n of [roar, crack]) { n.start(t); n.stop(end + 0.5); }
       for (const o of [wob, am, rum]) { o.start(t); o.stop(end + 0.5); }
@@ -878,7 +879,9 @@ function drawScene(now) {
       FX.parts.push({ x: px, y: py, vx: (Math.random() - 0.5) * 12, vy: (Math.random() - 0.5) * 12, life: 0.7, max: 0.7, color: PAL.lox, size: 1.2 });
     if (f.pause > 0 && !f.done && f.rocket) {                    // the T+24 h burn
       const exhaustX = drawPlume(f, px, py, now);
-      const label = "T+24 h burn " + (f.r.dvTcm >= 0 ? "+" : "−") + fmt(Math.abs(f.r.dvTcm), 1) + " m/s · " + (f.r.dvTcm < 0 ? "braking" : "speeding up");
+      // the Δv counts up while the engine fires and holds its full value through the tail-off
+      const given = Math.abs(f.r.dvTcm) * Math.min(1, (f.burnDur - f.pause) / (f.burnDur - burnTail(f)));
+      const label = "T+24 h burn " + (f.r.dvTcm >= 0 ? "+" : "−") + fmt(given, 1) + " m/s · " + (f.r.dvTcm < 0 ? "braking" : "speeding up");
       cx.font = "600 13px " + col("--f-data"); cx.fillStyle = PAL.orange;
       // the label goes on the side away from the plume, unless that runs off the screen
       let right = exhaustX > 0.2 ? true : exhaustX < -0.2 ? false : px > W - 230;
@@ -891,6 +894,10 @@ function drawScene(now) {
   drawFX();
 }
 
+// The T+24 h burn is scaled to the correction it applies. Inside the delivery windows it runs from
+// ~0 to ~58 m/s (about 11 m/s per m/s of muzzle error): 1 m/s fires for 0.35 s, 58 m/s for 2.9 s.
+const BURN_MIN_S = 0.3, BURN_S_PER_MS = 0.045, BURN_DV_FULL = 60;
+const burnTail = f => Math.min(0.25, f.burnDur * 0.25), burnRise = f => Math.min(0.15, f.burnDur * 0.15);   // shutdown and ignition
 // The engine's exhaust, opposite to the thrust: a correction that slows the capsule fires
 // forward along the track (the plume runs ahead of it), one that speeds it up fires backward.
 function drawPlume(f, px, py, now) {
@@ -898,8 +905,9 @@ function drawPlume(f, px, py, now) {
   const [ax, ay] = view.p(a[0], a[1]), [bx, by] = view.p(b[0], b[1]);
   const d = Math.hypot(bx - ax, by - ay) || 1, s = f.r.dvTcm < 0 ? 1 : -1;
   const ux = s * (bx - ax) / d, uy = s * (by - ay) / d, nx = -uy, ny = ux;          // exhaust direction and its normal
-  const k = Math.min(1, (1.6 - f.pause) / 0.15) * Math.min(1, f.pause / 0.3);         // ignition and shutdown
-  const len = (36 + 10 * Math.sin(now / 37) + 8 * Math.random()) * k, wid = 7 * k;
+  const k = Math.min(1, (f.burnDur - f.pause) / burnRise(f)) * Math.min(1, f.pause / burnTail(f));   // ignition and shutdown
+  const size = 0.45 + 0.55 * Math.sqrt(f.burnU);                                     // a bigger fix, a fiercer plume
+  const len = (36 + 10 * Math.sin(now / 37) + 8 * Math.random()) * k * size, wid = 7 * k * size;
   cx.save(); cx.globalCompositeOperation = "lighter";
   for (const [l, w, c, al] of [[len * 1.5, wid * 1.6, PAL.orange, 0.35], [len, wid, PAL.orange, 0.8], [len * 0.5, wid * 0.5, PAL.ink, 0.95]]) {
     const g = cx.createLinearGradient(px, py, px + ux * l, py + uy * l);
@@ -912,7 +920,7 @@ function drawPlume(f, px, py, now) {
   }
   cx.restore();
   // the trace: hot gas streaming out along the exhaust and cooling as it spreads
-  for (let n = 0; n < 4 * k; n++) {
+  for (let n = 0; n < 4 * k * (0.3 + 0.7 * f.burnU) + (Math.random() < 0.5 ? 1 : 0); n++) {
     const spread = (Math.random() - 0.5) * 0.35, v = 90 + Math.random() * 110;
     const cs = Math.cos(spread), sn = Math.sin(spread), vx = (ux * cs - uy * sn) * v, vy = (uy * cs + ux * sn) * v;
     FX.parts.push({ x: px + ux * 6, y: py + uy * 6, vx, vy, life: 0.9, max: 0.9, color: Math.random() < 0.3 ? PAL.ink : PAL.orange, size: 1.1 + Math.random() * 1.2 });
@@ -1091,13 +1099,16 @@ function frame(now) {
       f.h = Math.min(f.end, f.h + rate(f.h, f.end) * dt);
       // the T+24 h correction: an engine burn with its plume (a dead-on shot has nothing to fix)
       if (!f.burnShown && f.r.kind === "docked" && Math.abs(f.r.dvTcm) >= 0.05 && prev < T_TCM && f.h >= T_TCM) {
-        f.h = T_TCM; f.burnShown = true; burnNow = true; f.rocket = true; f.pause = 1.6;
+        f.h = T_TCM; f.burnShown = true; burnNow = true; f.rocket = true;
+        // the same engine at the same thrust: the burn lasts in proportion to the Δv it gives
+        f.burnU = Math.min(1, Math.abs(f.r.dvTcm) / BURN_DV_FULL);
+        f.burnDur = f.pause = BURN_MIN_S + BURN_S_PER_MS * Math.abs(f.r.dvTcm);
       }
     }
     while (f.i < f.pts.length - 1 && f.pts[f.i + 1][2] <= f.h) f.i++;
     const p = f.pts[f.i];
-    if (burnNow) SFX.rocket(1.6);
-    if (f.rocket && f.pause > 0 && !f.done) kick(1.2);   // the engine's rumble while it fires
+    if (burnNow) SFX.rocket(f.burnDur, f.burnU);
+    if (f.rocket && f.pause > 0 && !f.done) kick(0.4 + 1.4 * f.burnU);   // the engine's rumble while it fires, by the size of the burn
     $("clock").firstChild.nodeValue = "T+ " + fmt(f.h) + " h";
     $("clock-sub").textContent = holding() ? "on the rail" : fmt(Math.hypot(p[0] - L1_KM, p[1])) + " km to L1";
     if (f.h >= f.end && f.pause <= 0) {
