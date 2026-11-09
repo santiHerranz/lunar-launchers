@@ -26,6 +26,7 @@ The direct route misses three times less per m/s of error. But by T+24 h it has 
 ## Details
 
 - On screens of 1000×620 or more, an inset at the bottom right shows the chosen rail in profile and to scale, as if through a telescope. The terrain comes from `perfil_railes.py`, and the circle spans 4.5 km for both rails.
+- When you press, a marker pins the exact speed on the gauge: it slams in white, sends a shockwave both ways and shows the speed. It is green inside the window, red below the minimum and orange above. Only one capsule flies at a time, so the needle stops under the marker and the rest of the strip dims, leaving the trajectory as the focus. When the shot is resolved, the marker fades and the needle sweeps on.
 - The launch plays in real time: 2.4 s at 100 g, then the cradle brakes over 0.92 km. The map waits at T+0 until the capsule leaves the circle.
 - All sounds are synthesised with Web Audio, with no audio files: the rail's hum rising with speed, the release, the correction engine with its plume (forward when braking, backward when accelerating; a perfect shot needs no burn), docking, impact and failure. Press **M** or the sound button to mute.
 - Screen shake, sparks, rings and flashes mark the key moments. They are turned off when the system asks for reduced motion.
