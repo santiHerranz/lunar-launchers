@@ -2,6 +2,12 @@
 
 Rail launchers on the Moon. An electromagnetic rail (a mass driver) runs on solar power and needs no propellant. On the Moon there is no air, and escape speed is only 2.38 km/s, so a rail a few kilometres long is enough to throw payloads into orbit or across the surface.
 
+<p align="center">
+  <a href="https://santiherranz.github.io/lunar-launchers/"><img src="game/l1-oxygen-run.gif" width="280" alt="L1 Oxygen Run on a phone: a capsule fired up the hillside rail, seen through the spyglass, flies to the depot at L1, brakes with its engine at T+24 h and docks"></a>
+  <br>
+  <b><a href="https://santiherranz.github.io/lunar-launchers/">Play L1 Oxygen Run</a></b>, one button, in a phone frame on the project's home page or <a href="https://santiherranz.github.io/lunar-launchers/game/">full screen</a> on your phone.
+</p>
+
 This repository has four pieces of the same lunar supply chain:
 
 | | Piece | What it does |
@@ -33,6 +39,7 @@ Each folder has its own README with the reference figures, the main findings and
 - `*/calculations/`: the Python models (NumPy and SciPy). Each script writes its `.json` or `.log` next to it, and the outputs committed here are the reference runs. **Script names, comments and output keys are in Spanish**, the language the work was done in. The READMEs explain each script in English.
 - `*/plates/`: the illustrated plates, drawn entirely in code. Only the rendered images are published, not the drawing engine.
 - `game/index.html`: a single self-contained page with no build step.
+- `index.html` and `assets/`: the [home page on GitHub Pages](https://santiherranz.github.io/lunar-launchers/), with the game playable inside a phone frame and smaller copies of the plates.
 
 ## Licence
 

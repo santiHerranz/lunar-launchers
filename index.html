@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lunar launchers</title>
+<meta name="description" content="Rail launchers on the Moon: liquid oxygen to the Earth–Moon L1 point, ice from the south pole, and L1 Oxygen Run, a one-button game built on the same physics.">
+<meta property="og:title" content="Lunar launchers by Santi Herranz">
+<meta property="og:description" content="Rail launchers on the Moon, and a one-button game that fires lunar oxygen to L1.">
+<meta property="og:image" content="https://santiherranz.github.io/lunar-launchers/assets/direct.jpg">
+<meta name="theme-color" content="#0a0d14">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: on wide screens, the story on the left and a phone with the playable game on the right,
+   pinned while you scroll. On phones there is no phone-in-a-phone: a play button opens the game. */
+:root {
+  --space: #0a0d14;
+  --panel: #121722;
+  --line: #2a3242;
+  --ink: #e9e5db;
+  --dim: #8a93a6;
+  --orange: #f28c28;
+  --lox: #74c6ff;
+  --f-display: "Barlow Condensed", Bahnschrift, "Arial Narrow", sans-serif;
+  --f-body: Barlow, "Segoe UI", Arial, sans-serif;
+  --f-data: "IBM Plex Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--space); }
+body {
+  margin: 0; background: var(--space); color: var(--ink); font: 17px/1.55 var(--f-body);
+  padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+a { color: var(--lox); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.page {
+  max-width: 76rem; margin: 0 auto; padding-block: 48px 40px;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 56px; align-items: start;
+}
+.story { min-width: 0; max-width: 42rem; }
+.eyebrow { margin: 0; font: 600 13px/1.2 var(--f-display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+h1 { margin: 8px 0 0; font: 700 clamp(44px, 7vw, 76px)/0.92 var(--f-display); text-transform: uppercase; letter-spacing: 0.01em; color: var(--orange); text-wrap: balance; }
+.lead { margin: 20px 0 0; font-size: 19px; color: var(--ink); text-wrap: pretty; }
+.lead + p { color: var(--dim); text-wrap: pretty; }
+h2 { margin: 48px 0 16px; font: 700 26px/1.1 var(--f-display); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); }
+
+/* the four pieces: the plate, then what it is */
+.pieces { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.piece { display: grid; grid-template-columns: 168px minmax(0, 1fr); gap: 18px; padding: 14px; background: var(--panel); border: 1px solid var(--line); }
+.piece img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; background: var(--space); }
+.piece h3 { margin: 0; font: 700 21px/1.1 var(--f-display); letter-spacing: 0.03em; text-transform: uppercase; }
+.piece h3 a { color: var(--ink); text-decoration: none; }
+.piece h3 a:hover { color: var(--orange); }
+.piece .tag { display: inline-block; margin-left: 6px; padding: 1px 6px; vertical-align: 3px; font: 600 11px/1.4 var(--f-display); letter-spacing: 0.1em; color: var(--space); background: var(--orange); }
+.piece p { margin: 6px 0 0; font-size: 15.5px; color: var(--dim); text-wrap: pretty; }
+.piece .num { margin-top: 8px; font: 500 13px/1.5 var(--f-data); color: var(--ink); font-variant-numeric: tabular-nums; }
+.game-piece { border-color: color-mix(in srgb, var(--orange) 55%, var(--line)); }
+.game-thumb { display: grid; place-items: center; aspect-ratio: 4 / 3; background: radial-gradient(circle at 50% 40%, #1b2333, var(--space) 70%); }
+.game-thumb span { font: 700 26px/0.9 var(--f-display); text-transform: uppercase; color: var(--orange); text-align: center; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; min-width: 34rem; }
+th, td { padding: 9px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+thead th { font: 600 13px/1.2 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); background: var(--panel); }
+tbody th { font-weight: 500; color: var(--dim); white-space: nowrap; }
+td { font-family: var(--f-data); font-size: 13px; font-variant-numeric: tabular-nums; }
+tbody tr:last-child > * { border-bottom: 0; }
+
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--dim); }
+
+/* the phone: an iPhone-sized screen (390 × 844) that shrinks to fit the window's height */
+.device { position: sticky; top: 24px; display: grid; justify-items: center; gap: 14px; }
+.phone {
+  --h: min(780px, calc(100vh - 140px)); height: calc(var(--h) + 24px); aspect-ratio: 414 / 868;
+  padding: 12px; border-radius: 52px; background: #05070b;
+  border: 1px solid #2d3546; box-shadow: 0 0 0 2px #0d1119, 0 40px 80px -30px #000, inset 0 0 0 2px #151a24;
+  position: relative;
+}
+/* a speaker slit in the bezel, not an island over the screen: inside an iframe the game has no safe area to dodge it */
+.phone::before { content: ""; position: absolute; left: 50%; top: 4px; width: 64px; height: 4px; transform: translateX(-50%); border-radius: 2px; background: #1c2230; pointer-events: none; }
+.phone::after { content: ""; position: absolute; right: -4px; top: 150px; width: 3px; height: 74px; border-radius: 2px; background: #1c2230; }
+.screen { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; background: var(--space); }
+.screen iframe { display: block; width: 100%; height: 100%; border: 0; }
+.device figcaption { max-width: 22rem; text-align: center; font-size: 14px; color: var(--dim); text-wrap: balance; }
+.device figcaption a { white-space: nowrap; }
+.play { display: none; }
+
+@media (max-width: 960px) {
+  .page { grid-template-columns: 1fr; gap: 0; padding-top: 32px; }
+  .device { display: none; }
+  .play {
+    display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 24px; min-height: 60px; padding: 0 20px;
+    background: var(--orange); color: #1a0f04; text-decoration: none; font: 700 26px/1 var(--f-display); letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .play small { font: 500 14px/1.2 var(--f-body); letter-spacing: 0; text-transform: none; }
+}
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  .piece { grid-template-columns: 1fr; }
+  .piece img, .game-thumb { aspect-ratio: 16 / 9; }
+}
+</style>
+
+<main class="page">
+  <div class="story">
+    <p class="eyebrow">Santi Herranz · lunar-launchers</p>
+    <h1>Lunar launchers</h1>
+    <p class="lead">Rail launchers on the Moon. An electromagnetic rail runs on solar power and needs no propellant. With no air and an escape speed of only 2.38 km/s, a rail a few kilometres long can throw payloads into orbit or across the surface.</p>
+    <p>Here is one lunar supply chain, worked out with real trajectories: oxygen made from the regolith is fired to a depot at the Earth–Moon L1 point to refuel ships bound for Mars, and ice from the south pole is thrown to the oxygen plant. <a href="https://github.com/santiHerranz/lunar-launchers">The code and calculations are on GitHub.</a></p>
+    <a class="play" href="game/">Play L1 Oxygen Run <small>one button</small></a>
+
+    <h2>Four pieces</h2>
+    <ul class="pieces">
+      <li class="piece">
+        <img src="assets/direct.jpg" alt="Poster of the direct route: a rail up a 30° hillside on the Moon's western limb fires capsules straight to L1" loading="lazy" width="960" height="720">
+        <div>
+          <h3><a href="https://github.com/santiHerranz/lunar-launchers/tree/main/oxygen-to-l1-direct">Lunar oxygen to L1, direct route</a><span class="tag">Main</span></h3>
+          <p>A rail inclined 30° up a hillside at 84.92°W fires 500 kg capsules of liquid oxygen straight to the depot at L1.</p>
+          <p class="num">2,327.3 m/s · 59 h · 372 kg delivered</p>
+        </div>
+      </li>
+      <li class="piece">
+        <img src="assets/flat.jpg" alt="Poster of the flat rail: capsules loop once around the Moon on their way to L1" loading="lazy" width="960" height="720">
+        <div>
+          <h3><a href="https://github.com/santiHerranz/lunar-launchers/tree/main/oxygen-to-l1">Lunar oxygen to L1, flat rail</a></h3>
+          <p>The first design: a flat rail near the centre of the near side. Its capsules loop once around the Moon. This folder also holds the model both routes share.</p>
+          <p class="num">2,328.2 m/s · 308 h · 356 kg delivered</p>
+        </div>
+      </li>
+      <li class="piece">
+        <img src="assets/polar.jpg" alt="Poster of the polar ice hop: blocks of ice thrown on a ballistic arc from the south pole" loading="lazy" width="960" height="720">
+        <div>
+          <h3><a href="https://github.com/santiHerranz/lunar-launchers/tree/main/polar-ice-hop">Polar ice hop</a></h3>
+          <p>A rail on a sunlit ridge near Shackleton throws blocks of ice on a 2,728 km arc. They come down beside the oxygen rail and supply its plant with water.</p>
+          <p class="num">1,543 m/s · 49 min · 940 kg blocks</p>
+        </div>
+      </li>
+      <li class="piece game-piece">
+        <a class="game-thumb" href="game/" aria-label="Play L1 Oxygen Run"><span>L1<br>Oxygen<br>Run</span></a>
+        <div>
+          <h3><a href="game/">L1 Oxygen Run, a game</a></h3>
+          <p>One button. Fire a capsule at the right speed and watch whether it reaches the depot, from the hillside rail or the flat one. The physics is the same three-body model as the calculations.</p>
+          <p class="num">Window: about 9 m/s wide on either rail</p>
+        </div>
+      </li>
+    </ul>
+
+    <h2>Key numbers</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col"></th><th scope="col">Direct route</th><th scope="col">Flat rail</th><th scope="col">Polar ice hop</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Site</th><td>0.0°, 84.92°W</td><td>2.75°N 14.25°W</td><td>−89.5°, 0° → 0.0°, 84.92°W</td></tr>
+          <tr><th scope="row">Launch speed</th><td>2,327.3 m/s</td><td>2,328.2 m/s</td><td>1,543 m/s</td></tr>
+          <tr><th scope="row">Rail</th><td>2.76 km at 100 g, 30° up a slope</td><td>2.76 km at 100 g, flat</td><td>1.2 km at 100 g</td></tr>
+          <tr><th scope="row">Flight</th><td>59 h, direct</td><td>308 h, one loop</td><td>49 min, ballistic</td></tr>
+          <tr><th scope="row">Payload</th><td>372 kg of LOX</td><td>356 kg of LOX</td><td>940 kg of ice</td></tr>
+          <tr><th scope="row">Aim</th><td>1,925 km per m/s</td><td>5,730 km per m/s</td><td>6.1 km per m/s</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <footer>
+      Code under <a href="https://github.com/santiHerranz/lunar-launchers/blob/main/LICENSE">MIT</a>; plates under <a href="https://github.com/santiHerranz/lunar-launchers/blob/main/LICENSE-images.md">CC BY 4.0</a>. Please credit Santi Herranz. Times are in hours, speeds in metres per second.
+    </footer>
+  </div>
+
+  <figure class="device" aria-label="L1 Oxygen Run, playable in a phone frame">
+    <div class="phone"><div class="screen"><iframe src="game/" title="L1 Oxygen Run, playable" loading="lazy" allow="autoplay; fullscreen"></iframe></div></div>
+    <figcaption>Playable here. Press LAUNCH when the needle is in the green. <a href="game/">Open full screen</a></figcaption>
+  </figure>
+</main>

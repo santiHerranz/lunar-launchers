@@ -31,6 +31,8 @@ body {
   margin: 0; background: var(--space); color: var(--ink);
   font: 15px/1.4 var(--f-body); overflow: hidden;
   -webkit-tap-highlight-color: transparent;
+  /* a game, not a document: no double-tap zoom, no text selection or long-press menus, no pull-to-refresh */
+  touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overscroll-behavior: none;
 }
 #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 .hud {
@@ -97,6 +99,18 @@ h1 {
 .scope figcaption b { display: block; font: 700 13px/1.2 var(--f-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
 .scope figcaption span { display: block; }
 .scope .live { color: var(--ink); min-height: 1.4em; font-variant-numeric: tabular-nums; }
+/* phones: no room for the inset, so the spyglass pops up over the map for the shot on the rail
+   and everything else darkens round it, as if you put your eye to it */
+.scope.popup {
+  display: block; right: auto; bottom: auto; left: 50%; top: var(--pop-y, 50%); width: var(--pop-px, 260px);
+  transform: translate(-50%, -50%); z-index: 5; animation: scope-in 0.35s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.scope.popup canvas { width: var(--pop-px, 260px); height: var(--pop-px, 260px); border-radius: 50%;
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--space) 62%, transparent); }
+.scope.popup.closing { animation: scope-out 0.3s ease-in forwards; }
+.scope.popup figcaption { margin: 8px auto 0; padding: 6px 12px; width: max-content; max-width: 100%; box-sizing: border-box; background: var(--space); border: 1px solid var(--line); }
+@keyframes scope-in { from { opacity: 0; transform: translate(-50%, -50%) scale(0.55); } to { opacity: 1; transform: translate(-50%, -50%); } }
+@keyframes scope-out { to { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } }
 
 .controls {
   position: fixed; left: 0; right: 0; bottom: 0;
@@ -110,12 +124,13 @@ h1 {
 .modes { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 10px; border: 1px solid var(--line); background: var(--panel); }
 .modes label { display: block; min-width: 0; cursor: pointer; }
 .modes input { position: absolute; opacity: 0; pointer-events: none; }
-.modes span {
+.modes label > span {
   display: block; height: 100%; box-sizing: border-box; padding: 7px 10px;
   font: 400 12px/1.3 var(--f-data); color: var(--dim); border-bottom: 3px solid transparent;
 }
+.modes small { font-size: inherit; }
 .modes b { display: block; font: 700 15px/1.1 var(--f-display); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
-.modes label + label span { border-left: 1px solid var(--line); }
+.modes label + label > span { border-left: 1px solid var(--line); }
 .modes input:checked + span { background: color-mix(in srgb, var(--orange) 14%, transparent); border-bottom-color: var(--orange); color: var(--ink); }
 .modes input:checked + span b { color: var(--orange); }
 .modes input:focus-visible + span { outline: 2px solid var(--ink); outline-offset: -2px; }
@@ -176,7 +191,14 @@ h1 {
 
 @media (max-width: 640px) {
   .brand p, .ticks .minor { display: none; }
-  #sound { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(48px + env(safe-area-inset-top, 0px)); }
+  #sound { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); top: calc(46px + env(safe-area-inset-top, 0px)); padding: 8px 12px; }
+  /* one line per rail: the name and the flight time; the rest is on the map and in the spyglass */
+  .modes { margin-bottom: 8px; }
+  .modes label > span { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; min-height: 44px; padding: 0 12px; align-items: center; }
+  .modes b { display: inline; font-size: 16px; }
+  .modes .long { display: none; }
+  .legend .l-low-item { display: none; }
+  .legend { margin-top: 0; }
   .stats { font-size: 12px; gap: 1px 10px; }
   .stats .big { font-size: 15px; }
   .controls { gap: 10px; }
@@ -193,7 +215,7 @@ h1 {
   .brand p, .legend { display: none; }
   .controls { flex-wrap: nowrap; padding-top: 6px; }
   .modes { margin-bottom: 4px; }
-  .modes span { padding: 4px 8px; font-size: 11px; }
+  .modes label > span { padding: 4px 8px; font-size: 11px; }
   .gauge { flex-basis: auto; }
   #launch { width: auto; height: 52px; }
 }
@@ -238,8 +260,8 @@ h1 {
 <footer class="controls" id="controls">
   <div class="gauge">
     <div class="modes" role="radiogroup" aria-label="Launch site">
-      <label><input type="radio" name="mode" id="mode-slope" value="slope" checked><span><b>Slope rail</b> 84.92°W · 30° · direct · 59 h</span></label>
-      <label><input type="radio" name="mode" id="mode-flat" value="flat"><span><b>Flat rail</b> 14.25°W · loops the Moon · 308 h</span></label>
+      <label><input type="radio" name="mode" id="mode-slope" value="slope" checked><span><b>Slope rail</b> <small><span class="long">84.92°W · 30° · direct · </span>59 h</small></span></label>
+      <label><input type="radio" name="mode" id="mode-flat" value="flat"><span><b>Flat rail</b> <small><span class="long">14.25°W · loops the Moon · </span>308 h</small></span></label>
     </div>
     <div class="gauge-head"><span>Muzzle speed</span><div id="readout">2,330.0 <small>m/s</small></div></div>
     <div class="track" id="track">
@@ -250,7 +272,7 @@ h1 {
     </div>
     <div class="ticks" id="ticks"></div>
     <div class="legend">
-      <span><i class="l-low"></i>Falls back: below <b id="vmin-txt">2,322.8</b> m/s</span>
+      <span class="l-low-item"><i class="l-low"></i>Falls back: below <b id="vmin-txt">2,322.8</b> m/s</span>
       <span><i class="l-ok"></i><span id="band-txt">Working out the window…</span></span>
     </div>
   </div>
@@ -582,6 +604,7 @@ const SFX = (() => {
   return {
     get on() { return on; },
     set(v) { on = v; store.set("l1run.sound", v); if (ac) { if (v) ac.resume(); else ac.suspend(); } if (v) ensure(); },
+    wake() { ensure(); },
     click() { if (!ensure()) return; tone("square", 1200, 900, now(), 0.04, 0.06, 0.002); },
     charge(dur) {                                // the linear motor: a whine that climbs with the speed
       if (!ensure()) return; const t = now();
@@ -686,6 +709,8 @@ function drawFX() {
 }
 // numbers that count up instead of jumping
 let shownKg = 0;
+// a buzz in the hand on phones that can (Android); it follows the sound switch
+const buzz = p => { if (!SFX.on) return; try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} };
 function popStat(id) { const el = $(id); el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 
 // --- launch ----------------------------------------------------------------------------------
@@ -704,11 +729,10 @@ function launch() {
     pts.push(...resample(r.base, 0.25).slice(1));
   }
   flight = { r, pts, ghost, tcmAt, h: 0, i: 0, pause: 0, burnShown: false, done: false, end: pts[pts.length - 1][2] };
-  if (scopeVisible) startShot(MODE, v0); else shot = null;
-  // without the spyglass, a short wind-up stands in for the 2.4 s on the rail
-  flight.padHold = scopeVisible ? 0 : 0.35;
-  SFX.charge(scopeVisible ? shot.tRail : 0.35);
-  if (!scopeVisible) SFX.release(0.35);
+  // the shot on the rail plays through the spyglass: the inset on big screens, a pop-up on phones
+  startShot(MODE, v0); flight.padHold = 0;
+  if (!scopeVisible) openPopup();
+  SFX.charge(shot.tRail); buzz(12);
   const b = $("launch"); b.classList.remove("kick"); void b.offsetWidth; b.classList.add("kick");
   game.shots++;
   for (const el of document.querySelectorAll('input[name="mode"]')) el.disabled = true;
@@ -752,7 +776,7 @@ function finish() {
   clearTimeout(briefTimer); briefTimer = setTimeout(() => card.classList.add("brief"), 7000);   // phones: keep the title only
   m.ghosts.push({ pts: flight.pts, ok: r.kind === "docked" }); if (m.ghosts.length > 8) m.ghosts.shift();
   updateStats();
-  flight = null; shot = null; scopeCaption();                 // the next cradle is loaded
+  flight = null; shot = null; closePopup(); scopeCaption();   // the next cradle is loaded
   releaseMark();
   for (const el of document.querySelectorAll('input[name="mode"]')) el.disabled = false;
   $("launch").disabled = false; $("launch").textContent = "Launch";
@@ -764,7 +788,12 @@ function updateStats() {
   $("s-streak").textContent = game.streak + " (best " + game.best + ")";
 }
 
-$("launch").addEventListener("click", launch);
+// The shot fires when the finger or the mouse button goes down, not on release: in a timing game
+// the click's ~100 ms would move the needle. Enter or Space on the focused button still work.
+$("launch").addEventListener("pointerdown", e => { if (e.button !== 0) return; e.preventDefault(); launch(); });
+$("launch").addEventListener("click", e => { if (e.detail === 0) launch(); });
+// a touch only unlocks audio when the finger lifts, so wake it there too
+addEventListener("pointerup", () => SFX.wake(), { passive: true });
 addEventListener("keydown", e => {
   if (e.code === "KeyM" && !e.repeat) { SFX.set(!SFX.on); soundButton(); SFX.click(); return; }
   if ((e.code === "Space" || e.code === "Enter") && !e.repeat && ![$("launch"), $("sound")].includes(document.activeElement)) { e.preventDefault(); launch(); }
@@ -791,7 +820,7 @@ function layout() {
   if (y1 - y0 < minY) { const c = (y0 + y1) / 2; y0 = c - minY / 2; y1 = c + minY / 2; }
   const STRIP = 46;                                 // room on the Earth side for the Earth marker
   const portrait = (bottom - top) > (W - 32) * 1.15; // turn the map so Earth is at the bottom
-  scopeVisible = getComputedStyle($("scope")).display !== "none";
+  scopeVisible = matchMedia(INSET).matches;
   const bx0 = portrait ? 16 : 16 + STRIP, bx1 = W - 16 - (scopeVisible ? 250 : 0), by0 = top, by1 = Math.max(top + 120, bottom - (portrait ? STRIP : 0));
   const bw = bx1 - bx0, bh = by1 - by0;
   const ww = portrait ? (y1 - y0) : (x1 - x0), wh = portrait ? (x1 - x0) : (y1 - y0);
@@ -956,10 +985,25 @@ const PROFILES = {
   slope: { dx: 59.23, x0: -4145.8, La: 2762.0, Lf: 921.0, title: "Slope rail · to scale", sub: "0.0° 84.92°W · 30° · +1,381 m",
     z: [-2463,-2445,-2411,-2378,-2347,-2314,-2280,-2247,-2209,-2175,-2140,-2103,-2068,-2034,-2005,-1961,-1924,-1878,-1853,-1815,-1779,-1747,-1714,-1668,-1645,-1609,-1570,-1530,-1493,-1459,-1425,-1387,-1352,-1317,-1276,-1238,-1200,-1145,-1122,-1086,-1047,-1011,-977,-942,-909,-879,-839,-796,-758,-723,-681,-658,-615,-574,-534,-499,-462,-423,-375,-347,-325,-275,-238,-198,-163,-132,-104,-68,-28,23,34,71,97,129,160,194,225,247,267,286,302,318,323,325,320,313,314,314,308,305,302,299,295,288,286,281,277,269,257,250,241,228,221,212,202,190,184,177,166,156,149,141,123,101,83,71,65,62,56,46,36,27,19,11,5] },
 };
-const SCOPE_PX = 224, SCOPE_R_M = 2250;          // the circle spans 4.5 km, the same for both rails
+const SCOPE_R_M = 2250;                          // the circle spans 4.5 km, the same for both rails
+const INSET = "(min-width: 1000px) and (min-height: 620px)";   // where the spyglass sits as an inset
+let scopePx = 224;                               // the inset's size; the phone pop-up sets its own
 const scopeCv = $("scope-cv"), sc = scopeCv.getContext("2d");
 const SCOPE_STARS = Array.from({ length: 40 }, (_, i) => { const a = Math.sin(i * 91.7) * 9871.3, b = Math.sin(i * 27.1) * 3141.7; return [a - Math.floor(a), b - Math.floor(b)]; });
-let scopeVisible = false, shot = null;
+let scopeVisible = false, shot = null, popup = false;
+// Phones: the spyglass pops up over the map for the shot on the rail and shrinks away once the
+// capsule has left the circle. Everything else is dimmed meanwhile, so it can take the whole screen.
+function openPopup() {
+  const fig = $("scope");
+  scopePx = Math.round(Math.max(170, Math.min(W - 56, H - 120, 330)));
+  fig.style.setProperty("--pop-px", scopePx + "px"); fig.style.setProperty("--pop-y", Math.round(H / 2) + "px");
+  fig.classList.remove("closing"); fig.classList.add("popup"); popup = true;
+}
+function closePopup() {
+  if (!popup) return; popup = false;
+  const fig = $("scope"); fig.classList.add("closing");
+  setTimeout(() => { if (!popup) { fig.classList.remove("popup", "closing"); scopePx = 224; } }, 300);
+}
 function scopeCaption() {
   const P = PROFILES[MODE.key];
   $("scope-title").textContent = P.title; $("scope-sub").textContent = P.sub;
@@ -981,8 +1025,8 @@ function shotState(s) {                          // metres along the rail from t
   return { cap: s.v * tau, cradle: tau < s.tB ? s.v * tau - 0.5 * s.ab * tau * tau : s.P.Lf, vNow: s.v, onRail: false, tau };
 }
 function drawScope(dt) {
-  if (!scopeVisible) return;
-  const S = SCOPE_PX, R = S / 2, Ri = R - 7;
+  if (!scopeVisible && !popup) return;
+  const S = scopePx, R = S / 2, Ri = R - 7;
   if (scopeCv.width !== Math.round(S * DPR)) { scopeCv.width = scopeCv.height = Math.round(S * DPR); }
   const m = shot ? shot.m : MODE, P = PROFILES[m.key], e = m.elev * Math.PI / 180, u = [Math.cos(e), Math.sin(e)];
   const mid = (P.Lf - P.La) / 2, cxm = mid * u[0], czm = mid * u[1], k = Ri / SCOPE_R_M;
@@ -1020,7 +1064,7 @@ function drawScope(dt) {
     const g = sc.createLinearGradient(bx, by, px, py); g.addColorStop(0, PAL.lox + "00"); g.addColorStop(1, PAL.lox);
     sc.strokeStyle = g; sc.lineWidth = 2.5; sc.beginPath(); sc.moveTo(bx, by); sc.lineTo(px, py); sc.stroke();
   }
-  if (shot && !st.onRail && !shot.released) { shot.released = true; SFX.release(); kick(5); }
+  if (shot && !st.onRail && !shot.released) { shot.released = true; SFX.release(); kick(5); buzz(35); }
   if (shot && !st.onRail && st.tau < 0.25) {     // flash at the muzzle on release
     sc.fillStyle = PAL.ink; sc.globalAlpha = 1 - st.tau / 0.25;
     sc.beginPath(); sc.arc(X(0), Z(0), 3 + 30 * st.tau, 0, Math.PI * 2); sc.fill(); sc.globalAlpha = 1;
@@ -1059,20 +1103,19 @@ const holding = () => (flight && flight.padHold > 0) || (shot && !(shot.out && s
 function leavePad() {
   const [x, y] = view.p((MODE.site[0] - XM) * KM, MODE.site[1] * KM);
   burst(x, y, PAL.orange, 22, 90, 0.8); ring(x, y, PAL.orange, 4, 30, 0.6);
-  if (!scopeVisible) kick(4);
 }
 function arrive(f) {
   const p = f.pts[f.pts.length - 1], [x, y] = view.p(p[0], p[1]);
   if (f.r.kind === "docked") {
     const [lx, ly] = view.p(L1_KM, 0);
-    SFX.dock(); kick(3); flash(PAL.lox, 0.10);
+    SFX.dock(); kick(3); flash(PAL.lox, 0.10); buzz([25, 70, 25, 70, 40]);
     ring(lx, ly, PAL.lox, 6, 60, 1.1); ring(lx, ly, PAL.ink, 6, 42, 0.9, 0.12); ring(lx, ly, PAL.lox, 6, 90, 1.4, 0.25);
     burst(lx, ly, PAL.lox, 40, 110, 1.3, 2.2); burst(lx, ly, PAL.ink, 12, 60, 0.9, 1.4);
   } else if (f.r.kind === "crash") {
-    SFX.crash(); kick(10); flash(PAL.bad, 0.18);
+    SFX.crash(); kick(10); flash(PAL.bad, 0.18); buzz(220);
     burst(x, y, PAL.bad, 36, 120, 1.0, 2.2); burst(x, y, PAL.orange, 18, 70, 0.8, 1.6); ring(x, y, PAL.bad, 4, 40, 0.8);
   } else {
-    SFX.fail(); burst(x, y, PAL.dim, 16, 40, 1.0, 1.4); ring(x, y, PAL.bad, 4, 24, 0.8);
+    SFX.fail(); buzz([40, 60, 40]); burst(x, y, PAL.dim, 16, 40, 1.0, 1.4); ring(x, y, PAL.bad, 4, 24, 0.8);
   }
 }
 
@@ -1091,6 +1134,7 @@ function frame(now) {
   if (flight) {
     const f = flight;
     let burnNow = false;
+    if (popup && !holding()) closePopup();
     if (holding()) { if (f.padHold > 0) f.padHold -= dt; /* the map waits at T+0 while the rail fires */ }
     else if (f.pause > 0) { f.pause -= dt; }
     else {
@@ -1107,7 +1151,7 @@ function frame(now) {
     }
     while (f.i < f.pts.length - 1 && f.pts[f.i + 1][2] <= f.h) f.i++;
     const p = f.pts[f.i];
-    if (burnNow) SFX.rocket(f.burnDur, f.burnU);
+    if (burnNow) { SFX.rocket(f.burnDur, f.burnU); buzz(Math.round(Math.min(900, f.burnDur * 600))); }
     if (f.rocket && f.pause > 0 && !f.done) kick(0.4 + 1.4 * f.burnU);   // the engine's rumble while it fires, by the size of the burn
     $("clock").firstChild.nodeValue = "T+ " + fmt(f.h) + " h";
     $("clock-sub").textContent = holding() ? "on the rail" : fmt(Math.hypot(p[0] - L1_KM, p[1])) + " km to L1";

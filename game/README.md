@@ -1,6 +1,8 @@
 # L1 Oxygen Run by Santi Herranz
 
-**[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)**
+**[Play it in your browser](https://santiherranz.github.io/lunar-launchers/game/)**, or in a phone frame on the [project's home page](https://santiherranz.github.io/lunar-launchers/).
+
+<p align="center"><img src="l1-oxygen-run.gif" width="280" alt="One launch on a phone: the spyglass shows the shot up the hillside rail, the capsule flies to L1, brakes with its engine at T+24 h and docks"></p>
 
 A one-button game built on the physics of [Lunar oxygen to L1](../oxygen-to-l1-direct/). A needle sweeps between 2,300 and 2,360 m/s. Press **LAUNCH** or the space bar to fire a capsule of liquid oxygen from the rail. Then watch whether it reaches the depot at L1.
 
@@ -29,7 +31,8 @@ The direct route misses three times less per m/s of error. But by T+24 h it has 
 - When you press, a marker pins the exact speed on the gauge: it slams in white, sends a shockwave both ways and shows the speed. It is green inside the window, red below the minimum and orange above. Only one capsule flies at a time, so the needle stops under the marker and the rest of the strip dims, leaving the trajectory as the focus. When the shot is resolved, the marker fades and the needle sweeps on.
 - The T+24 h burn is sized to the correction, like a real engine at constant thrust: it fires for 0.3 s plus 0.045 s per m/s. A 3 m/s fix is a short puff of 0.4 s; a 57 m/s fix roars for almost 3 s. The plume, the gas trail, the shake and the sound grow with it, and the label counts the m/s up as they are applied.
 - The launch plays in real time: 2.4 s at 100 g, then the cradle brakes over 0.92 km. The map waits at T+0 until the capsule leaves the circle.
-- All sounds are synthesised with Web Audio, with no audio files: the rail's hum rising with speed, the release, the correction engine with its plume (forward when braking, backward when accelerating; a perfect shot needs no burn), docking, impact and failure. Press **M** or the sound button to mute.
+- On phones there is no room for the inset, so the spyglass pops up over the map for the shot and the rest of the screen darkens, as if you put your eye to it. It shrinks away once the capsule has left the circle. The controls fit in less space: one line per rail, and only the delivery window in the legend.
+- The shot fires when your finger or mouse button goes down, not when it lifts: in a timing game the ~100 ms of a click would move the needle. Phones that can vibrate buzz on the launch, the release, the burn, docking and impact, with the same switch as the sound.- All sounds are synthesised with Web Audio, with no audio files: the rail's hum rising with speed, the release, the correction engine with its plume (forward when braking, backward when accelerating; a perfect shot needs no burn), docking, impact and failure. Press **M** or the sound button to mute.
 - Screen shake, sparks, rings and flashes mark the key moments. They are turned off when the system asks for reduced motion.
 
 ## Running it locally
