@@ -920,8 +920,11 @@ function drawScene(now) {
       // the label goes on the side away from the plume, unless that runs off the screen
       let right = exhaustX > 0.2 ? true : exhaustX < -0.2 ? false : px > W - 230;
       if (right && px < 260) right = false; if (!right && px > W - 260) right = true;
-      cx.textAlign = right ? "right" : "left";
-      cx.fillText(label, right ? px - 14 : px + 14, py - 14);
+      // and it never runs off the screen: on a narrow phone neither side has room for all of it
+      const lw = cx.measureText(label).width;
+      const lx0 = Math.max(8, Math.min(W - 8 - lw, right ? px - 14 - lw : px + 14));
+      cx.textAlign = "left";
+      cx.fillText(label, lx0, py - 14);
     }
     cx.fillStyle = PAL.ink; cx.beginPath(); cx.arc(px, py, 3.5, 0, Math.PI * 2); cx.fill();
   }
