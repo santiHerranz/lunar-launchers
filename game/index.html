@@ -102,7 +102,7 @@ h1 {
 /* phones: no room for the inset, so the spyglass pops up over the map for the shot on the rail
    and everything else darkens round it, as if you put your eye to it */
 .scope.popup {
-  display: block; right: auto; bottom: auto; left: 50%; top: var(--pop-y, 50%); width: var(--pop-px, 260px);
+  display: block; right: auto; bottom: auto; left: var(--pop-x, 50%); top: var(--pop-y, 50%); width: var(--pop-px, 260px);
   transform: translate(-50%, -50%); z-index: 5; animation: scope-in 0.35s cubic-bezier(0.2, 1.3, 0.4, 1);
 }
 .scope.popup canvas { width: var(--pop-px, 260px); height: var(--pop-px, 260px); border-radius: 50%;
@@ -852,8 +852,13 @@ function drawScene(now) {
     cx.beginPath(); cx.moveTo(ex, ey); cx.lineTo(view.portrait ? mx : mx + re, view.portrait ? my - re : my); cx.stroke(); cx.setLineDash([]);
     cx.fillStyle = PAL.lox; cx.beginPath(); cx.arc(mx, my, re, 0, Math.PI * 2); cx.fill();
     cx.fillStyle = PAL.dim; cx.font = "600 12px " + col("--f-display"); cx.textBaseline = "middle";
-    if (view.portrait) { cx.textAlign = "left"; cx.fillText("EARTH · 326,400 KM BEYOND L1", mx + re + 8, my); }
-    else { cx.textAlign = "center"; cx.fillText("EARTH", mx, my + re + 12); cx.fillText("326,400 KM", mx, my + re + 26); }
+    if (view.portrait) {
+      cx.textAlign = "left"; const w = spacedText(cx, "EARTH · 326,400 KM BEYOND L1", mx + re + 8, my);
+      earthBox = [mx - re, my - re, mx + re + 8 + w, my + re];
+    } else {
+      cx.textAlign = "center"; const w = Math.max(spacedText(cx, "EARTH", mx, my + re + 12), spacedText(cx, "326,400 KM", mx, my + re + 26));
+      earthBox = [mx - Math.max(re, w / 2), my - re, mx + Math.max(re, w / 2), my + re + 33];
+    }
   }
 
   // reference route
@@ -882,8 +887,8 @@ function drawScene(now) {
   cx.strokeStyle = PAL.orange; cx.lineWidth = 2.5; cx.lineCap = "round";
   cx.beginPath(); cx.moveTo(sx - ue[0] * 5, sy - ue[1] * 5); cx.lineTo(sx, sy); cx.lineTo(sx + ud[0] * 8, sy + ud[1] * 8); cx.stroke(); cx.lineCap = "butt";
   cx.fillStyle = PAL.ink; cx.font = "600 12px " + col("--f-display"); cx.textBaseline = "middle";
-  cx.textAlign = "center"; cx.fillText("MOON", ex, ey + rm + 12);
-  cx.fillStyle = PAL.orange; cx.fillText(M.railLabel, ex, ey + rm + 26);
+  cx.textAlign = "center"; spacedText(cx, "MOON", ex, ey + rm + 12);
+  cx.fillStyle = PAL.orange; spacedText(cx, M.railLabel, ex, ey + rm + 26);
 
   // depot at L1
   drawDepot(lx, ly, now);
@@ -957,6 +962,23 @@ function drawPlume(f, px, py, now) {
   return ux;
 }
 
+// Labels in the condensed display face: its own space is so narrow that some browsers (Safari on
+// the iPhone) close it up ("L1DEPOT"), so the words are laid out one by one with a clear gap.
+// Honours the context's textAlign and returns the width drawn.
+function spacedText(c, t, x, y, gapEm = 0.32) {
+  const words = t.split(" ");
+  if (words.length < 2) { c.fillText(t, x, y); return c.measureText(t).width; }
+  const size = parseFloat((c.font.match(/([\d.]+)px/) || [0, 12])[1]), gap = size * gapEm;
+  const ws = words.map(w => c.measureText(w).width), total = ws.reduce((a, b) => a + b, 0) + gap * (words.length - 1);
+  const al = c.textAlign;
+  let at = al === "center" ? x - total / 2 : al === "right" || al === "end" ? x - total : x;
+  c.textAlign = "left";
+  words.forEach((w, i) => { c.fillText(w, at, y); at += ws[i] + gap; });
+  c.textAlign = al;
+  return total;
+}
+let earthBox = null;                             // where Earth and its label are, so the depot's label avoids them
+
 function drawDepot(x, y, now) {
   cx.save(); cx.translate(x, y);
   cx.strokeStyle = PAL.line; cx.lineWidth = 1; cx.setLineDash([2, 3]); cx.lineDashOffset = CALM ? 0 : -now / 400;   // a slow turn
@@ -964,8 +986,14 @@ function drawDepot(x, y, now) {
   cx.fillStyle = PAL.lox; cx.fillRect(-14, -3, 8, 6); cx.fillRect(6, -3, 8, 6);   // panels
   cx.fillStyle = PAL.ink; cx.beginPath(); cx.arc(0, 0, 5, 0, Math.PI * 2); cx.fill();
   cx.textAlign = "center"; cx.textBaseline = "middle";
-  cx.fillStyle = PAL.orange; cx.font = "700 14px " + col("--f-display"); cx.fillText("L1 DEPOT", 0, -30);
-  cx.fillStyle = PAL.dim; cx.font = "500 11px " + col("--f-data"); cx.fillText("58,000 km from the Moon", 0, 30);
+  cx.fillStyle = PAL.orange; cx.font = "700 14px " + col("--f-display"); spacedText(cx, "L1 DEPOT", 0, -30);
+  // the distance goes under the depot, unless Earth's label sits there (a short screen puts the
+  // depot close to Earth): then it goes above the title
+  const sub = "58,000 km from the Moon";
+  cx.fillStyle = PAL.dim; cx.font = "500 11px " + col("--f-data");
+  const hw = cx.measureText(sub).width / 2 + 4, b = earthBox;
+  const clash = b && x + hw > b[0] && x - hw < b[2] && y + 38 > b[1] && y + 22 < b[3];
+  cx.fillText(sub, 0, clash ? -48 : 30);
   cx.restore();
 }
 
@@ -993,11 +1021,22 @@ const SCOPE_STARS = Array.from({ length: 40 }, (_, i) => { const a = Math.sin(i 
 let scopeVisible = false, shot = null, popup = false;
 // Phones: the spyglass pops up over the map for the shot on the rail and shrinks away once the
 // capsule has left the circle. Everything else is dimmed meanwhile, so it can take the whole screen.
+// It never covers the clock ("T+ 0 h" and "on the rail"): it goes below it (phones held upright)
+// or beside it on the Moon's side (phones turned sideways), whichever leaves the bigger circle.
 function openPopup() {
-  const fig = $("scope");
-  scopePx = Math.round(Math.max(170, Math.min(W - 56, H - 120, 330)));
-  fig.style.setProperty("--pop-px", scopePx + "px"); fig.style.setProperty("--pop-y", Math.round(H / 2) + "px");
+  const fig = $("scope"), clock = $("clock");
+  clock.firstChild.nodeValue = "T+ 0 h"; $("clock-sub").textContent = "on the rail";   // both lines, so it measures true
+  clock.hidden = false;
   fig.classList.remove("closing"); fig.classList.add("popup"); popup = true;
+  const capH = fig.querySelector("figcaption").offsetHeight + 8;       // the caption under the circle
+  const c = clock.getBoundingClientRect(), M = 12;
+  const below = Math.min(W - 56, H - (c.bottom + M) - capH - M, 330);
+  const beside = Math.min(W - M - (c.right + M), H - 2 * M - capH, 330);
+  scopePx = Math.round(Math.max(140, below, beside));
+  const x = beside > below ? (c.right + M + W - M) / 2 : W / 2;
+  const y = beside > below ? H / 2 : c.bottom + M + (scopePx + capH) / 2;
+  fig.style.setProperty("--pop-px", scopePx + "px");
+  fig.style.setProperty("--pop-x", Math.round(x) + "px"); fig.style.setProperty("--pop-y", Math.round(y) + "px");
 }
 function closePopup() {
   if (!popup) return; popup = false;
